@@ -1,0 +1,8 @@
+Name: bclock
+Usage: bclock [hh:][m]m:ss[.ms]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/11
+UserLevel: Guest
+Help: sets black's clock for an examined game. example: bclock 3:00

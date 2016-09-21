@@ -1,0 +1,116 @@
+Name: tell
+Usage: tell user|channel_# message
+Aliases:
+SeeAlso:
+LastModifiedBy: CDay
+LastModifiedDate: 2009/12/22
+UserLevel: Guest
+Help:
+  "Tell" transmits your message to the user or channel # specified.  The
+server gives you some feedback that the message has been sent.  You will also
+be told whether the user is playing a game currently, or is not even logged on
+at the moment.  The system alias for "tell" is "t".
+
+
+Tells to individual users
+---------------------------
+
+  An example of a tell you can make to an individual user is:
+
+    tell DAV Are you busy?
+
+  You, as the sender, will see this feedback displayed: "(told user)".  YOu
+will also see other feedback in certain situations, such as 'busy' or 'idle'
+(for 5 minutes or more).
+
+  As a shortcut, you can use "." as an alias for "tell user" when you want to
+send another message to the last person you told.  That way you can keep
+conversations going easily.  Example: suppose DAV was the last person to whom
+you sent a 'tell' and you want to send him another 'tell'.  You could type
+"tell DAV okay, I understand" or ". okay, I understand".  Be careful when
+using the "." alias, though, because it works on the last person you told.
+
+  When you receive a "tell" from a user it will appear like this:
+	<User> tells you: <message>
+
+If an admin is "on duty", a tell from an admin will be followed by the (*)
+admin designation.
+
+
+Tells to a channel
+------------------
+
+  The server has several special channels (see "help channel_list") as well as
+channels for users to design.  A tell to a channel will be sent to all users
+who have activited that channel (that is, are listening to that channel). A
+few channels (currently 0, 5, 48 and 63) are "locked", i.e. not available for
+general use.
+
+  If you send a tell to a channel, you as the sender will see the following
+display after sending your message:
+
+    (told ## users in channel # "channel_title")
+
+where # is the channel number and ## is the number of people on that channel
+that received your message.  For example, if you sent a tell to channel 1 the
+display might be: "(told 57 users in channel 1 "Help")."
+  For channels 1, 2, 49 and 50, an "autoadd" feature has been implemented so
+that any tells to those channels will result in an attempt to add them to your
+channel list.
+
+  As a shortcut, you can use "," as an alias for "tell #" and your message
+will be sent to the last channel you gave in a "tell" command.  (Compare to
+"xtell" command.)
+
+  When you receive a "tell" from a channel you are on, it will appear like
+this:
+    user(#): text
+
+where # is the channel number.
+
+SPECIAL NOTES
+
+  (a) The server remembers both the last user to whom and the last channel to
+which you have told something.  For this reason, "." and "," are separate
+aliases and do not interfere with each other.
+
+  (b) Mostly for use within aliases, it is possible to redirect a tell to a
+shout or a cshout, by using the special forms "tell ! <text>", which will 
+actually result in <text> being shouted, and "tell ^ <text>" which results
+in a cshout.
+
+  (c) A special command, "say", can be used for communicating with an opponent
+during or directly following a chess game.  Another special tell, "ptell", can
+be used when communicating with your bughouse partner.
+
+  (d) Another special command, "message", sends a message to a user so that it
+can be stored for future use.
+
+  (e) You can decide whether or not to hear a "tell" from unregistered users;
+setting the "tell" variable to 0 (zero) filters tells from unregistered users
+being sent to you, and setting the "ctell" variable to 0 (zero) filters
+channel tells from unregistered users.
+
+  (f) You can turn off channel tells you receive by setting the "chanoff"
+variable to 1 (one).  Your channel list will still be active.  So the chanoff
+variable saves you time from removing all channels when you don't want those
+messages to disturb you.  You can also turn off channel tells automatically
+when you are playign a game, by setting the 'silence' variable to 1 (see "help
+v_silence").  Users in a channel but who aren't listening to that channel will
+be marked with {} when you use the inchannel command.
+
+  (g) You can decide NOT to receive tells and other communications from a
+given user; see the "help censor" file for details.
+
+  (h) If the user to whom you send a tell has his/her 'busy' string set, or
+has been idle for longer than 5 minutes, you will be notified of this.
+
+  (i) Please make sure that your tells to users and channels follow proper
+etiquette (see the guidelines for communication in the 'etiquette' help file).
+
+  (j) if you have an alias that goes something like "tell @ hi there", you can
+substitute the '@' with a name or a channel (or with '.' and ',' to tell to
+the last person or last channel you addressed). Sometimes it may be useful to
+send the aliased tell to 'shout' or 'cshout', which can be done using 'tell !'
+and 'tell ^'. Supposing your alias for the above example is 'hi', you can now
+type 'hi !' to effectively shout "hi there".

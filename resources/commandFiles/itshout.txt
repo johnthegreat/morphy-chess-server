@@ -1,0 +1,62 @@
+Name: it
+Usage: it message
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/07/31
+UserLevel: Player
+Help:
+LIMITED TO REGISTERED USERS
+
+  Displays your message to all users who are open to hear shouts.  Returns
+the number of users who heard your shout.  "Shout" has an alias of "!".
+
+  Here is an example: if your handle is HANDEL and you type "shout This server
+is great!", users will see the following message displayed --
+
+	HANDEL shouts: This server is great!
+
+You, as the sender, will see the following --
+
+	HANDEL shouts: This server is great!
+      (shouted to ## players)
+
+where ## is the number of users who received the message.
+
+  All users have a set shout quota, a limit on how many shouts can be made
+within a given period of time.  Further details are given in the "shout_quota"
+help file.
+
+
+SPECIAL NOTES: 
+
+  (a) Shouts must be in English.
+
+  (b) Use "cshout" rather than "shout" for chess-related messages.
+
+  (c) To contact just one user, use "tell".
+
+  (d) If you want to contact a specific group of users, "tell" to a channel.
+
+  (e) "It" and "shout" are similar.  Be familiar with their differences.
+
+  (f) Do not abuse 'it' or 'shout'.  Abuse can result in sanctions being
+imposed, typically being forcibly prevented from further (mis)use of shout.
+See the "etiquette" and "shout_abuse" help files for guidelines.
+
+  (g) You can decide whether or not to hear a "shout" from other users;
+setting the "shout" variable to 0 (zero) filters these from being sent to you
+("set shout off" or "set shout 0"). Setting your 'silence' variable to 1 will
+achieve the same effect, together with filtering cshouts and channel tells,
+while you are playing, examining or observing a game.
+
+  (h) If what you want to do is have conversations with a lot of people, we
+suggest that you use IRC -- a special internet process for conversations.  See
+"irc_help" for details.
+
+  (i) if you have an alias that goes something like "tell @ hi there", you can
+substitute the '@' with a name or a channel (or with '.' and ',' to tell to
+the last person or last channel you addressed). Sometimes it may be useful to
+send the aliased tell to 'shout' or 'cshout', which can be done using 'tell !'
+and 'tell ^'. Supposing your alias for the above example is 'hi', you can now
+type 'hi !' to effectively shout "hi there".

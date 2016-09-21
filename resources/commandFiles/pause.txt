@@ -1,0 +1,8 @@
+Name: pause
+Usage: pause
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/08/12
+UserLevel: Guest
+Help: Asks for a pause request, or accepts an existing one.

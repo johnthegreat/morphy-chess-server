@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="Morphy" default="run" basedir=".">
+	<property environment="env" />
+
+	<property name="version" value="Prototype" />
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="target" />
+	<property name="docs.dir" value="target/docs" />
+	<property name="classes.dir" value="target/classes" />
+	<property name="install.dir" value="target/install" />
+	<property name="uploads.dir" value="target/uploads" />
+	<property name="javadoc.dir" value="${docs.dir}" />
+	<property name="lib.dir" value="lib" />
+
+	<path id="class.path">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${docs.dir}" />
+		<mkdir dir="${classes.dir}" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="compile" depends="init" description="Compile the Java source code">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="class.path" debug="true" deprecation="true" optimize="false">
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+	</target>
+
+	<target name="javadoc" description="Generates java docs">
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="Raptor">
+			<packageset dir="${src.dir}" defaultexcludes="yes">
+				<include name="**" />
+			</packageset>
+			<tag name="todo" scope="all" description="To do:" />
+		</javadoc>
+		<echo>Javadoc is located in ${javadoc.dir}</echo>
+	</target>
+
+	<target name="run" depends="compile" description="Starts Morphy">
+		<path id="run.class.path">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+			<pathelement location="${classes.dir}" />
+		</path>
+		<java classname="morphy.Morphy" classpathref="run.class.path" fork="true" />
+	</target>
+</project>

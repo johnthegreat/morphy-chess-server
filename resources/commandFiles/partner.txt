@@ -1,0 +1,8 @@
+Name: partner
+Usage: partner username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/07
+UserLevel: Guest
+Help: Offers username a bughouse partnership.

@@ -1,0 +1,8 @@
+Name: observe 
+Usage: observe [n | username]
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/05
+UserLevel: Guest
+Help: Watches a player's game.

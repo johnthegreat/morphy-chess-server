@@ -1,0 +1,8 @@
+Name: mexamine
+Usage: mexamine username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/11
+UserLevel: Guest
+Help: makes an observer of an examined game an examiner of the game.

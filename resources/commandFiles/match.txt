@@ -1,0 +1,8 @@
+Name: match
+Usage: match username
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/03
+UserLevel: Guest
+Help: Matches a player.

@@ -1,0 +1,7 @@
+Name: ahelp
+Usage: ahelp [topic]
+Aliases: ?
+SeeAlso: 
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/11/12
+UserLevel: Admin

@@ -1,0 +1,8 @@
+Name: wclock
+Usage: wclock [hh:][m]m:ss[.ms]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/10
+UserLevel: Guest
+Help: sets white's clock. example: wclock 3:00

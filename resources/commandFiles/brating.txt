@@ -1,0 +1,8 @@
+Name: brating
+Usage: brating [100-3500]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/11
+UserLevel: Guest
+Help: sets black's rating. if rating is smaller than 100, rating is set to 100. if rating is larger than 3500, rating is set to 3500.

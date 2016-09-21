@@ -1,0 +1,8 @@
+Name: admin
+Usage: admin
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/08/07
+UserLevel: Admin
+Help: Toggles if (*) is shown.

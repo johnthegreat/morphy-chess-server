@@ -1,0 +1,8 @@
+Name: removechannel
+Usage: -ch number
+Aliases: removelist channel
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2009/12/25
+UserLevel: Guest
+Help: Removes a channel from your viewing.

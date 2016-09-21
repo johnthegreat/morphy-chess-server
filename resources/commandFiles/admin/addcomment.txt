@@ -1,0 +1,9 @@
+Name: addcomment
+Usage: addcomment username comment  
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/11/11
+UserLevel: Admin
+Help:
+Adds a comment to a player's server comment log file.

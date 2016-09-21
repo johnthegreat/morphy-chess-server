@@ -1,0 +1,8 @@
+Name: set
+Usage: set field value (example: set 1 Hello World!)
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/04
+UserLevel: Guest
+Help: Sets a variable.

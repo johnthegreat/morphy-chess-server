@@ -1,0 +1,8 @@
+Name: messages
+Usage: messages [username | n | n-m]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/11
+UserLevel: Guest
+Help: Shows messages and filters them with the optional arguments. This also supports a comma-separated list of numbers and ranges, eg: 5-10,15,20

@@ -1,0 +1,8 @@
+Name: pending
+Usage: pending
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/03
+UserLevel: Guest
+Help: Shows pending offers, to and from.

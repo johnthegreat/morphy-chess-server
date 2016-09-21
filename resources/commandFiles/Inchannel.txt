@@ -1,0 +1,8 @@
+Name: inchannel
+Usage: inchannel username|channelNumber
+Aliases: inch
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2009/12/25
+UserLevel: Guest
+Help: Shows the users in a channel, or the list of channels that a user is in.

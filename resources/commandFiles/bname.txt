@@ -1,0 +1,8 @@
+Name: bname
+Usage: bclock str
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/11
+UserLevel: Guest
+Help: sets black's name. eg bname johnthegreat

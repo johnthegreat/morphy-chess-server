@@ -1,0 +1,8 @@
+Name: sr
+Usage: sr
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/08/07
+UserLevel: Player
+Help: Toggles if (SR) is shown.

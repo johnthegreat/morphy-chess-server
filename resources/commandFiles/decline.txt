@@ -1,0 +1,8 @@
+Name: decline
+Usage: decline n|username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/08/12
+UserLevel: Guest
+Help: Declines an offer if one has been made to you.

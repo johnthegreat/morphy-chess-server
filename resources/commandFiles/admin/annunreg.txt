@@ -1,0 +1,8 @@
+Name: annunreg
+Usage: annunreg message
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/08/14
+UserLevel: Admin
+Help: Sends a server announcement to all unregistered players connected.

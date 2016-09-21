@@ -1,0 +1,8 @@
+Name: message
+Usage: message username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/08/05
+UserLevel: Guest
+Help: Messages a user some text.

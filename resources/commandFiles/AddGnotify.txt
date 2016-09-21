@@ -1,0 +1,8 @@
+Name: +gnotify
+Usage: +gnotify username
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2009/12/25
+UserLevel: Guest
+Help: Adds the specified username to the gnotify list.

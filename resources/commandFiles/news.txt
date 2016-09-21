@@ -1,0 +1,8 @@
+Name: news
+Usage: news [<empty> | n | n-n | all]
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/04
+UserLevel: Guest
+Help: Shows the latest server news.

@@ -1,0 +1,8 @@
+Name: removelist
+Usage: removelist listName value | -listName value
+Aliases: -
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2009/12/25
+UserLevel: Guest
+Help: Removes an item from your personal list.

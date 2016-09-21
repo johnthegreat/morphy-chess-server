@@ -1,0 +1,8 @@
+Name: examine
+Usage: examine
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/10
+UserLevel: Guest
+Help: examines a game from scratch.

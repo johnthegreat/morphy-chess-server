@@ -1,0 +1,10 @@
+Name: refresh
+Usage: refresh [gamenumber|username]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/11/12
+UserLevel: Guest
+Help:
+Sends the most up-to-date position of 
+the requested gamenumber or username's game.

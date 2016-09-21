@@ -1,0 +1,8 @@
+Name: games
+Usage: games
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/05
+UserLevel: Guest
+Help: Shows the current games in progress

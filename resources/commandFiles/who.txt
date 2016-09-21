@@ -1,0 +1,11 @@
+Name: who
+Usage: who
+Aliases: 
+SeeAlso: 
+LastModifiedBy: CDay
+LastModifiedDate: 2009/12/22
+UserLevel: Guest
+Help:
+  Displays all of the users logged in.
+  
+  In the future this will be able to handle FICS who flags and will display rating and other flags.

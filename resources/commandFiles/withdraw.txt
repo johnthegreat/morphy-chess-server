@@ -1,0 +1,8 @@
+Name: withdraw
+Usage: withdraw
+Aliases: 
+SeeAlso: 
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/07
+UserLevel: Guest
+Help: Withdraws an offer.

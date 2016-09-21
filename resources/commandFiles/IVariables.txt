@@ -1,0 +1,8 @@
+Name: ivariables
+Usage: ivariables | ivariables username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/07/31
+UserLevel: Guest
+Help: Shows a user's interface variables

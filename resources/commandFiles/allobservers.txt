@@ -1,0 +1,8 @@
+Name: allobservers
+Usage: allobservers [n | name]
+Aliases: allme
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/05
+UserLevel: Guest
+Help: Lists the observers of a game

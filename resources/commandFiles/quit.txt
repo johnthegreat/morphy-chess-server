@@ -1,0 +1,14 @@
+Name: quit
+Usage: quit
+Aliases: bye exit
+SeeAlso: adjourn  alias 
+LastModifiedBy: CDay
+LastModifiedDate: 2009/12/22
+UserLevel: Guest
+Help:
+  This command exits you from the server.  "Bye" and "exit" are default
+aliases for "quit".
+
+SPECIAL NOTE:  This command cannot be used if you are in the middle of a chess
+match.  If you need to leave during a match, first ask your opponent for an
+adjournment and explain why.

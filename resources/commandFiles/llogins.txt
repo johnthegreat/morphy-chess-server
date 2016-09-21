@@ -1,0 +1,8 @@
+Name: llogins
+Usage: llogins [n]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/08/07
+UserLevel: Guest
+Help: Shows last logins to the server, with an optional limit [n].

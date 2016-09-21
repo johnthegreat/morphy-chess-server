@@ -1,0 +1,8 @@
+Name: announce
+Usage: announce message
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2010/08/12
+UserLevel: Admin
+Help: Sends a server announcement to everyone connected.

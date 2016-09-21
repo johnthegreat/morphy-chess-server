@@ -1,0 +1,5 @@
+Logging you out.
+
+COOL ASCII ART GOES HERE
+        
+Thank you for using the Morphy Open Source Chess Server.

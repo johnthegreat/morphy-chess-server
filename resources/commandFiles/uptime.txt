@@ -1,0 +1,8 @@
+Name: uptime
+Usage: uptime
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/05
+UserLevel: Guest
+Help: Shows how long the server has been up and running, as well as some other stats.

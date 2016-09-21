@@ -1,0 +1,10 @@
+Name: logins
+Usage: logins username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/08/07
+UserLevel: Guest
+Help: 
+Shows last logins to the server by user username. Prefixes are allowed, eg "john*" would match "johnthegreat". 
+But the asterisk ("*") is required to use the prefix ability.

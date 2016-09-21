@@ -1,0 +1,8 @@
+Name: moves
+Usage: moves n
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/05
+UserLevel: Guest
+Help: Shows you the moves of a game

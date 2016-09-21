@@ -1,0 +1,8 @@
+Name: handles
+Usage: handles prefix
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/09
+UserLevel: Guest
+Help: Shows registered handles with the specified prefix.

@@ -1,0 +1,8 @@
+Name: bugwho
+Usage: bugwho [gpu]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/07
+UserLevel: Guest
+Help: Shows bughouse games [g], bughouse partnerships [p], and players who have bugopen=1 [u].

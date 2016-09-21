@@ -1,0 +1,8 @@
+Name: accept
+Usage: accept n|username
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/03
+UserLevel: Guest
+Help: Accepts an offer if one has been made to you.

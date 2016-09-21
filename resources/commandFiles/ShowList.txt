@@ -1,0 +1,8 @@
+Name: showlist
+Usage: showlist listName value | =listName value
+Aliases: =
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2009/12/25
+UserLevel: Guest
+Help: Shows the items on a list.

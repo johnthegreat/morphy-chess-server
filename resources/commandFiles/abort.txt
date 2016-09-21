@@ -1,0 +1,8 @@
+Name: abort
+Usage: abort
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2011/06/06
+UserLevel: Guest
+Help: abort offers to halt the game.
