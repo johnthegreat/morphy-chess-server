@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (c) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -217,9 +217,8 @@ public class SocketConnectionService implements Service {
 			if (LOG.isInfoEnabled()) {
 				LOG.info("name=" + name);
 			}
-
-			UserService instance = UserService.getInstance();
 			
+			UserService instance = UserService.getInstance();
 			boolean isGuest = false;
 			
 			if (name.equalsIgnoreCase("g") || name.equalsIgnoreCase("guest")) {
@@ -242,141 +241,164 @@ public class SocketConnectionService implements Service {
 				sendWithoutPrompt("\"" + name + "\" is not a registered name. You may use this name to play unrated games.\n" +
 						"(After logging in, do \"help register\" for more info on how to register.)\n\n" +
 						"" +
-						"Press return to enter the server as \"" + name + "\":",userSession);
+						"Press return to enter the server as \"" + name + "\":", userSession);
 				//return;
 			} else {
 				sendWithoutPrompt("\""
-								+ name
-								+ "\" is a registered name.  If it is yours, type the password.\n"
-								+ "If not, just hit return to try another name.\n\n"
-								+ "" + "password: ",userSession);
-				/*try { userSession.getChannel().configureBlocking(true); } catch(Exception e) { e.printStackTrace(System.err); }*/
-				try {
-					DBConnection conn = DBConnectionService.getInstance().getDBConnection();
-					java.sql.Statement s = conn.getStatement();
-					s.execute("SELECT `password` FROM `users` WHERE `username` = '" + name + "'");
-					java.sql.ResultSet r = s.getResultSet();
-					if (r.next()) {
-						String actualpass = r.getString(1);
-						
-						if (!actualpass.equals(actualpass)) {
-							userSession.send("**** Invalid password! ****\n\n" +
-									"If you cannot remember your password, please log in with \"g\" and ask for help\n" +
-									"in channel 4. Type \"tell 4 I've forgotten my password\". If that is not\n" +
-									"possible, please email: support@freechess.org\n\n" +
-									"\tIf you are not a registered player, enter guest or a unique ID.\n" +
-									"\t\t(If your return key does not work, use cntrl-J)\n\n");
-							//userSession.disconnect();
-						}
-					}
-				} catch(java.sql.SQLException e) {
-					e.printStackTrace(System.err);
-				}
-			}
-
-			boolean isLoggedIn = instance.isLoggedIn(name);
-			if (isLoggedIn) {
-				/* this code in this logic block should be commented out to support multiple-login. */
-				userSession.send(name + " is already logged in - kicking them out.");
-				
-				UserSession sess = instance.getUserSession(name);
-				sess.send("**** " + name + " has arrived - you can't both be logged in. ****");
-				sess.disconnect();
-				isLoggedIn = !isLoggedIn;
+						+ name
+						+ "\" is a registered name.  If it is yours, type the password.\n"
+						+ "If not, just hit return to try another name.\n\n"
+						+ "" + "password: ", userSession);
 			}
 			
+			userSession.setCurrentState(SocketChannelUserSession.UserSessionState.LOGIN_NEED_PASSWORD);
 			userSession.getUser().setUserName(name);
-			userSession.getUser().setPlayerType(PlayerType.Human);
-			userSession.getUser().setUserLevel(isGuest?UserLevel.Guest:UserLevel.Player);
 			userSession.getUser().setRegistered(!isGuest);
-			userSession.getUser().setUserVars(new morphy.user.UserVars(userSession.getUser()));
-			if (isGuest) {
-				userSession.getUser().getUserVars().getVariables().put("rated", "0");
+		} else {
+			sendWithoutPrompt("Invalid user name: " + name + " Good Bye.\n",
+					userSession);
+			userSession.disconnect();
+		}
+	}
+	
+	protected void handlePasswordPromptText(SocketChannelUserSession userSession, String message) {
+		String userPasswordEntered = message;
+		String name = userSession.getUser().getUserName();
+		boolean isGuest = ! userSession.getUser().isRegistered();
+		
+		UserService instance = UserService.getInstance();
+		/*try { userSession.getChannel().configureBlocking(true); } catch(Exception e) { e.printStackTrace(System.err); }*/
+		
+		if (! isGuest) {
+			
+			try {
+				DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+				java.sql.Statement s = conn.getStatement();
+				s.execute("SELECT `password` FROM `users` WHERE `username` = '" + name + "'");
+				java.sql.ResultSet r = s.getResultSet();
+				if (r.next()) {
+					String actualpass = r.getString(1);
+					
+					if (!actualpass.equals(userPasswordEntered)) {
+						sendWithoutPrompt("**** Invalid password! ****\n\n" +
+								"If you cannot remember your password, please log in with \"g\" and ask for help\n" +
+								"in channel 4. Type \"tell 4 I've forgotten my password\". If that is not\n" +
+								"possible, please email: support@freechess.org\n\n" +
+								"\tIf you are not a registered player, enter guest or a unique ID.\n" +
+								"\t\t(If your return key does not work, use cntrl-J)\n\nlogin: ", userSession);
+						userSession.setCurrentState(SocketChannelUserSession.UserSessionState.LOGIN_NEED_USERNAME);
+						//userSession.disconnect();
+						return;
+					}
+				}
+			} catch (java.sql.SQLException e) {
+				e.printStackTrace(System.err);
 			}
-			userSession.setHasLoggedIn(true);
-			if (!isLoggedIn) {
-				instance.addLoggedInUser(userSession);
-			} else {
-				// This code is used for multiple-login.
+		}
+		
+		boolean isLoggedIn = instance.isLoggedIn(name);
+		if (isLoggedIn) {
+				/* this code in this logic block should be commented out to support multiple-login. */
+			userSession.send(name + " is already logged in - kicking them out.");
+			
+			UserSession sess = instance.getUserSession(name);
+			sess.send("**** " + name + " has arrived - you can't both be logged in. ****");
+			sess.disconnect();
+			isLoggedIn = !isLoggedIn;
+		}
+		
+		userSession.getUser().setUserName(name);
+		userSession.getUser().setPlayerType(PlayerType.Human);
+		userSession.getUser().setUserLevel(isGuest?UserLevel.Guest:UserLevel.Player);
+		userSession.getUser().setRegistered(!isGuest);
+		userSession.getUser().setUserVars(new morphy.user.UserVars(userSession.getUser()));
+		if (isGuest) {
+			userSession.getUser().getUserVars().getVariables().put("rated", "0");
+		}
+		userSession.setCurrentState(SocketChannelUserSession.UserSessionState.LOGGED_IN);
+		if (!isLoggedIn) {
+			instance.addLoggedInUser(userSession);
+		} else {
+			// This code is used for multiple-login.
 				/*SocketChannelUserSession sess = (SocketChannelUserSession) instance.getUserSession(name);
 				sess.addUserOnMultipleLogins(userSession);
 				userSession.addParentOnMultipleLogins(sess);*/
-			}
-			userSession.getUser().setDBID(instance.getDBID(name));
-
-			boolean isHeadAdmin = false;
-
-			if (!isGuest) {
-				DBConnection conn = DBConnectionService.getInstance().getDBConnection();
-				
-				String query = "SELECT pl.`name`,pe.`value` FROM personallist pl INNER JOIN personallist_entry pe ON (pe.personallist_id = pl.id) WHERE pl.user_id = '" + userSession.getUser().getDBID() + "'";
-				java.sql.ResultSet rs = conn.executeQueryWithRS(query);
-				try {
-					while(rs.next()) {
-						PersonalList pl = PersonalList.valueOf(rs.getString(1));
-						String val = rs.getString(2);
-						userSession.getUser().getLists().get(pl).add(val);
-						if (pl == PersonalList.channel) {
-							int channelNum = Integer.parseInt(val);
-							Channel c = ChannelService.getInstance().getChannel(channelNum);
-							if (c != null) {
-								c.addListener(userSession);
-							}
+		}
+		userSession.getUser().setDBID(instance.getDBID(name));
+		
+		boolean isHeadAdmin = false;
+		
+		if (!isGuest) {
+			DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+			
+			String query = "SELECT pl.`name`,pe.`value` FROM personallist pl INNER JOIN personallist_entry pe ON (pe.personallist_id = pl.id) WHERE pl.user_id = '" + userSession.getUser().getDBID() + "'";
+			java.sql.ResultSet rs = conn.executeQueryWithRS(query);
+			try {
+				while(rs.next()) {
+					PersonalList pl = PersonalList.valueOf(rs.getString(1));
+					String val = rs.getString(2);
+					userSession.getUser().getLists().get(pl).add(val);
+					if (pl == PersonalList.channel) {
+						int channelNum = Integer.parseInt(val);
+						Channel c = ChannelService.getInstance().getChannel(channelNum);
+						if (c != null) {
+							c.addListener(userSession);
 						}
-					}
-				} catch(SQLException e) { Morphy.getInstance().onError(e); }
-				
-				Map<PersonalList,Integer> map = new HashMap<PersonalList,Integer>();
-				query = "SELECT `name`,`id` FROM `personallist` WHERE `user_id` = '" + userSession.getUser().getDBID() + "'";
-				rs = conn.executeQueryWithRS(query);
-				try {
-					while(rs.next()) {
-						map.put(PersonalList.valueOf(rs.getString(1)),rs.getInt(2));
-					}
-				} catch(SQLException e) { Morphy.getInstance().onError(e); }
-				userSession.getUser().setPersonalListDBIDs(map);
-				
-				conn.executeQuery("UPDATE `users` SET `lastlogin` = CURRENT_TIMESTAMP, `ipaddress` = '"
-								+ SocketUtils.getIpAddress(userSession.getChannel().socket()) + "' WHERE `username` = '" + name + "'");
-				ResultSet r = conn.executeQueryWithRS("SELECT `adminLevel` FROM `users` WHERE `username` = '" + name + "'");
-				try {
-					if (r.next()) {
-						String level = r.getString(1);
-						UserLevel val = UserLevel.valueOf(level);
-						userSession.getUser().setUserLevel(val);
-						if (val == UserLevel.Admin
-								|| val == UserLevel.SuperAdmin
-								|| val == UserLevel.HeadAdmin) {
-							ServerListManagerService s = ServerListManagerService
-									.getInstance();
-							s.getElements().get(s.getList("admin")).add(
-									name);
-						}
-
-						if (val == UserLevel.HeadAdmin) {
-							isHeadAdmin = true;
-						}
-					}
-				} catch (SQLException e) {
-					if (LOG.isErrorEnabled()) {
-						LOG
-								.error("Unable to set user level from database for name \""
-										+ name + "\"");
-						LOG.error(e);
 					}
 				}
-			}
-
-			StringBuilder loginMessage = new StringBuilder(200);
-			loginMessage.append(formatMessage(userSession,
-					"**** Starting FICS session as " 
-							+ instance.getTags(name) + " ****\n"));
-			if (isHeadAdmin)
-				loginMessage.append("\n  ** LOGGED IN AS HEAD ADMIN **\n");
-			loginMessage.append(ScreenService.getInstance().getScreen(
-					Screen.SuccessfulLogin));
-			userSession.send(loginMessage.toString());
+			} catch(SQLException e) { Morphy.getInstance().onError(e); }
 			
+			Map<PersonalList,Integer> map = new HashMap<PersonalList,Integer>();
+			query = "SELECT `name`,`id` FROM `personallist` WHERE `user_id` = '" + userSession.getUser().getDBID() + "'";
+			rs = conn.executeQueryWithRS(query);
+			try {
+				while(rs.next()) {
+					map.put(PersonalList.valueOf(rs.getString(1)),rs.getInt(2));
+				}
+			} catch(SQLException e) { Morphy.getInstance().onError(e); }
+			userSession.getUser().setPersonalListDBIDs(map);
+			
+			conn.executeQuery("UPDATE `users` SET `lastlogin` = CURRENT_TIMESTAMP, `ipaddress` = '"
+					+ SocketUtils.getIpAddress(userSession.getChannel().socket()) + "' WHERE `username` = '" + name + "'");
+			ResultSet r = conn.executeQueryWithRS("SELECT `adminLevel` FROM `users` WHERE `username` = '" + name + "'");
+			try {
+				if (r.next()) {
+					String level = r.getString(1);
+					UserLevel val = UserLevel.valueOf(level);
+					userSession.getUser().setUserLevel(val);
+					if (val == UserLevel.Admin
+							|| val == UserLevel.SuperAdmin
+							|| val == UserLevel.HeadAdmin) {
+						ServerListManagerService s = ServerListManagerService
+								.getInstance();
+						s.getElements().get(s.getList("admin")).add(
+								name);
+					}
+					
+					if (val == UserLevel.HeadAdmin) {
+						isHeadAdmin = true;
+					}
+				}
+			} catch (SQLException e) {
+				if (LOG.isErrorEnabled()) {
+					LOG
+							.error("Unable to set user level from database for name \""
+									+ name + "\"");
+					LOG.error(e);
+				}
+			}
+		}
+		
+		StringBuilder loginMessage = new StringBuilder(200);
+		loginMessage.append(formatMessage(userSession,
+				"**** Starting FICS session as "
+						+ instance.getTags(name) + " ****\n"));
+		if (isHeadAdmin)
+			loginMessage.append("\n  ** LOGGED IN AS HEAD ADMIN **\n");
+		loginMessage.append(ScreenService.getInstance().getScreen(
+				Screen.SuccessfulLogin));
+		userSession.send(loginMessage.toString());
+
 //			query = "SELECT DISTINCT u.username FROM `morphyics`.`personallist` pl INNER JOIN users u ON (pl.user_id = u.id) WHERE pl.`name` = 'notify'";
 //			rs = dbcs.getDBConnection().executeQueryWithRS(query);
 //			try {
@@ -385,69 +407,64 @@ public class SocketConnectionService implements Service {
 //					String username = rs.getString(1);
 //					UserSession sess = us.getUserSession(username);
 //					sess.send("Notification: " + name + " has arrived.");
-//				} 
+//				}
 //			} catch(SQLException e) { Morphy.getInstance().onError(e); }
+		
+		UserSession[] sessions = UserService.getInstance().fetchAllUsersWithVariable("pin","1");
+		for(UserSession s : sessions) {
+			UserLevel adminLevel = s.getUser().getUserLevel();
 			
-			UserSession[] sessions = UserService.getInstance().fetchAllUsersWithVariable("pin","1");
-			for(UserSession s : sessions) {
-				UserLevel adminLevel = s.getUser().getUserLevel();
-				
-				if (adminLevel == UserLevel.Admin || adminLevel == UserLevel.SuperAdmin || adminLevel == UserLevel.HeadAdmin) {
-					s.send(String.format("[%s (%s: %s) has connected.]",
-								userSession.getUser().getUserName(),
-								!isGuest?"R":"U",
-								SocketUtils.getIpAddress(userSession.getChannel().socket())));
-				} else {
-					s.send(String.format("[%s has connected.]",userSession.getUser().getUserName()));
-				}
+			if (adminLevel == UserLevel.Admin || adminLevel == UserLevel.SuperAdmin || adminLevel == UserLevel.HeadAdmin) {
+				s.send(String.format("[%s (%s: %s) has connected.]",
+						userSession.getUser().getUserName(),
+						!isGuest?"R":"U",
+						SocketUtils.getIpAddress(userSession.getChannel().socket())));
+			} else {
+				s.send(String.format("[%s has connected.]",userSession.getUser().getUserName()));
 			}
-			
-			DBConnectionService dbcs = DBConnectionService.getInstance();
-			
-			java.util.List<String> arrivalNotedBy = new java.util.ArrayList<String>(10);
-			// this query gets all usernames with this player on their notify list.
-			String query = "SELECT u.username FROM personallist pl INNER JOIN personallist_entry ple ON (pl.id = ple.personallist_id) INNER JOIN users u ON (u.id = pl.user_id) WHERE pl.`name` = 'notify' && ple.`value` LIKE '" + userSession.getUser().getUserName() + "';";
-			ResultSet rs = dbcs.getDBConnection().executeQueryWithRS(query);
-			try {
-				UserService us = UserService.getInstance();
-				while(rs.next()) {
-					String username = rs.getString(1);
-					UserSession sess = us.getUserSession(username);
-					if (sess != null) {
-						UserVars uv = sess.getUser().getUserVars();
-						boolean highlight = uv.getVariables().get("highlight").equals("1");
-						if (sess != null && sess.isConnected()) {
-							sess.send("Notification: " + (highlight?((char)27)+"[7m":"") + name + (highlight?((char)27)+"[0m":"") + " has arrived.");
-							arrivalNotedBy.add(sess.getUser().getUserName());
-						}
-					}
-				}
-			} catch(SQLException e) { Morphy.getInstance().onError(e); }
-			if (arrivalNotedBy.size() > 0) {
-				userSession.send("Your arrival was noted by: " + MorphyStringUtils
-						.toDelimitedString(arrivalNotedBy.toArray(new String[arrivalNotedBy.size()])," "));
-			}
-			
-			query = "SELECT ple.`value` FROM personallist pl INNER JOIN personallist_entry ple ON (pl.id = ple.personallist_id) WHERE pl.user_id = " + userSession.getUser().getDBID() + " && pl.`name` = 'notify'"; // get this player's notify list
-			rs = dbcs.getDBConnection().executeQueryWithRS(query);
-			try {
-				UserService us = UserService.getInstance();
-				while(rs.next()) {
-					String username = rs.getString(1);
-					if (arrivalNotedBy.contains(username)) continue;
-					UserSession sess = us.getUserSession(username);
-					if (sess == null) continue;
+		}
+		
+		DBConnectionService dbcs = DBConnectionService.getInstance();
+		
+		java.util.List<String> arrivalNotedBy = new java.util.ArrayList<String>(10);
+		// this query gets all usernames with this player on their notify list.
+		String query = "SELECT u.username FROM personallist pl INNER JOIN personallist_entry ple ON (pl.id = ple.personallist_id) INNER JOIN users u ON (u.id = pl.user_id) WHERE pl.`name` = 'notify' && ple.`value` LIKE '" + userSession.getUser().getUserName() + "';";
+		ResultSet rs = dbcs.getDBConnection().executeQueryWithRS(query);
+		try {
+			UserService us = UserService.getInstance();
+			while(rs.next()) {
+				String username = rs.getString(1);
+				UserSession sess = us.getUserSession(username);
+				if (sess != null) {
 					UserVars uv = sess.getUser().getUserVars();
 					boolean highlight = uv.getVariables().get("highlight").equals("1");
-					if (sess != null && sess.isConnected()) sess.send("Notification: " + (highlight?((char)27)+"[7m":"") + name + (highlight?((char)27)+"[0m":"") + " has arrived and isn't on your notify list.");
+					if (sess != null && sess.isConnected()) {
+						sess.send("Notification: " + (highlight?((char)27)+"[7m":"") + name + (highlight?((char)27)+"[0m":"") + " has arrived.");
+						arrivalNotedBy.add(sess.getUser().getUserName());
+					}
 				}
-			} catch(SQLException e) { Morphy.getInstance().onError(e); }
-			// Notification: ChannelBot has arrived and isn't on your notify list.
-		} else {
-			sendWithoutPrompt("Invalid user name: " + message + " Good Bye.\n",
-					userSession);
-			userSession.disconnect();
+			}
+		} catch(SQLException e) { Morphy.getInstance().onError(e); }
+		if (arrivalNotedBy.size() > 0) {
+			userSession.send("Your arrival was noted by: " + MorphyStringUtils
+					.toDelimitedString(arrivalNotedBy.toArray(new String[arrivalNotedBy.size()])," "));
 		}
+		
+		query = "SELECT ple.`value` FROM personallist pl INNER JOIN personallist_entry ple ON (pl.id = ple.personallist_id) WHERE pl.user_id = " + userSession.getUser().getDBID() + " && pl.`name` = 'notify'"; // get this player's notify list
+		rs = dbcs.getDBConnection().executeQueryWithRS(query);
+		try {
+			UserService us = UserService.getInstance();
+			while(rs.next()) {
+				String username = rs.getString(1);
+				if (arrivalNotedBy.contains(username)) continue;
+				UserSession sess = us.getUserSession(username);
+				if (sess == null) continue;
+				UserVars uv = sess.getUser().getUserVars();
+				boolean highlight = uv.getVariables().get("highlight").equals("1");
+				if (sess != null && sess.isConnected()) sess.send("Notification: " + (highlight?((char)27)+"[7m":"") + name + (highlight?((char)27)+"[0m":"") + " has arrived and isn't on your notify list.");
+			}
+		} catch(SQLException e) { Morphy.getInstance().onError(e); }
+		// Notification: ChannelBot has arrived and isn't on your notify list.
 	}
 
 	protected String readMessage(SocketChannel channel) {
@@ -517,6 +534,7 @@ public class SocketConnectionService implements Service {
 		try {
 			SocketChannelUserSession session = new SocketChannelUserSession(
 					new User(), channel);
+			session.setCurrentState(SocketChannelUserSession.UserSessionState.LOGIN_NEED_USERNAME);
 			socketToSession.put(channel.socket(), session);
 
 //			ByteBuffer buffer = BufferUtils.createBuffer(ScreenService
@@ -605,8 +623,10 @@ public class SocketConnectionService implements Service {
 								if (command.equals("") || command.equals("\n")
 										|| command.equals("\n\r")) {
 									session.send("");
-								} else if (!session.hasLoggedIn()) {
+								} else if (session.getCurrentState() == SocketChannelUserSession.UserSessionState.LOGIN_NEED_USERNAME) {
 									handleLoginPromptText(session, command);
+								} else if (session.getCurrentState() == SocketChannelUserSession.UserSessionState.LOGIN_NEED_PASSWORD) {
+									handlePasswordPromptText(session, command);
 								} else {
 									if (expandAliases) {
 										CommandService.getInstance()

@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (c) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,6 +52,10 @@ import org.apache.commons.logging.LogFactory;
 
 public class SocketChannelUserSession implements UserSession,
 		Comparable<UserSession> {
+	public enum UserSessionState {
+		LOGIN_NEED_USERNAME, LOGIN_NEED_PASSWORD, LOGGED_IN;
+	}
+	
 	protected static Log LOG = LogFactory
 			.getLog(SocketChannelUserSession.class);
 
@@ -59,7 +63,6 @@ public class SocketChannelUserSession implements UserSession,
 	protected SocketChannel channel;
 	protected StringBuilder inputBuffer;
 	protected long lastReceivedTime;
-	protected boolean hasLoggedIn = false;
 	protected long loginTime;
 	protected Map<UserSessionKey, Object> objectMap;
 	protected Timer idleLogoutTimer;
@@ -68,6 +71,7 @@ public class SocketChannelUserSession implements UserSession,
 	protected boolean isPlaying = false;
 	protected boolean isExamining = false;
 	protected List<Integer> gamesObserving;
+	protected UserSessionState currentState;
 	
 	protected List<SocketChannelUserSession> multipleLogins;
 	protected SocketChannelUserSession multipleLoginsParent;
@@ -264,7 +268,7 @@ public class SocketChannelUserSession implements UserSession,
 	}
 
 	public boolean hasLoggedIn() {
-		return hasLoggedIn;
+		return currentState == UserSessionState.LOGGED_IN;
 	}
 
 	public boolean isConnected() {
@@ -334,10 +338,6 @@ public class SocketChannelUserSession implements UserSession,
 
 	public void setChannel(SocketChannel channel) {
 		this.channel = channel;
-	}
-
-	public void setHasLoggedIn(boolean hasLoggedIn) {
-		this.hasLoggedIn = hasLoggedIn;
 	}
 
 	public void setInputBuffer(StringBuilder inputBuffer) {
@@ -416,5 +416,13 @@ public class SocketChannelUserSession implements UserSession,
 
 	public void setGamesObserving(List<Integer> gamesObserving) {
 		this.gamesObserving = gamesObserving;
+	}
+	
+	public void setCurrentState(UserSessionState currentState) {
+		this.currentState = currentState;
+	}
+	
+	public UserSessionState getCurrentState() {
+		return currentState;
 	}
 }
