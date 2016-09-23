@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ public class MatchCommand extends AbstractCommand {
 			user = matches[0];
 		
 		if (!UserService.getInstance().isValidUsername(user)) {
-			userSession.send("There is no player matching the name " + user + ".");
+			userSession.send(String.format("There is no player matching the name %s.",user));
 			return;
 		}
 		
@@ -79,39 +79,39 @@ public class MatchCommand extends AbstractCommand {
 		}
 		
 		if (userSession.getUser().isOnList(PersonalList.censor,user)) {
-			userSession.send("You are censoring " + user + ".");
+			userSession.send(String.format("You are censoring %s.",user));
 			return;
 		}
 		
 		if (userSession.getUser().isOnList(PersonalList.noplay,user)) {
-			userSession.send("You have " + user + " on your noplay list.");
+			userSession.send(String.format("You have %s on your noplay list.",user));
 			return;
 		}
 		
 		SocketChannelUserSession sess = (SocketChannelUserSession)userService.getUserSession(user);
 		
 		if (sess.getUser().isOnList(PersonalList.censor,userSession.getUser().getUserName())) {
-			userSession.send(user + " is censoring you.");
+			userSession.send(String.format("%s is censoring you.",user));
 			return;
 		}
 		
 		if (sess.getUser().isOnList(PersonalList.noplay,userSession.getUser().getUserName())) {
-			userSession.send("You are on " + user + "'s noplay list.");
+			userSession.send(String.format("You are on %s's noplay list.",user));
 			return;
 		}
 		
 		if (sess.getUser().getUserVars().getVariables().get("open").equals("0")) {
-			userSession.send(user + " is not open to match requests.");
+			userSession.send(String.format("%s is not open to match requests.",user));
 			return;
 		}
 		
 		if (sess.isPlaying()) {
-			userSession.send(user + " is playing a game.");
+			userSession.send(String.format("%s is playing a game.",user));
 			return;
 		}
 		
 		if (sess.isExamining()) {
-			userSession.send(user + " is examining a game.");
+			userSession.send(String.format("%s is examining a game.",user));
 			return;
 		}
 		
@@ -130,9 +130,9 @@ public class MatchCommand extends AbstractCommand {
 		
 		/* i hate doing this, but for now i will presume it is in format: 3 0 r zh black */
 		if (pos != -1) {
-			MorphyStringTokenizer toks = new MorphyStringTokenizer(arguments," ");
+			MorphyStringTokenizer toks = new MorphyStringTokenizer(arguments.substring(pos+1)," ");
 			String tok = toks.nextToken();
-			if (tok.matches("[0-9]+")) {
+			if (tok != null && tok.matches("[0-9]+")) {
 				// time
 				p.setTime(Integer.parseInt(tok));
 				timeSet = true;
@@ -140,18 +140,18 @@ public class MatchCommand extends AbstractCommand {
 			}
 			
 			
-			if (tok.matches("[0-9]+")) {
+			if (tok != null && tok.matches("[0-9]+")) {
 				// increment
 				p.setIncrement(Integer.parseInt(tok));
 				incrementSet = true;
 				tok = toks.nextToken();
 			}
 			
-			if (tok.equalsIgnoreCase("u") || tok.equalsIgnoreCase("unrated")) { 
+			if (tok != null && (tok.equalsIgnoreCase("u") || tok.equalsIgnoreCase("unrated"))) {
 				p.setRated(false); 
 				ratedSet = true;
 			}
-			if (tok.equalsIgnoreCase("r") || tok.equalsIgnoreCase("rated")) {
+			if (tok != null && (tok.equalsIgnoreCase("r") || tok.equalsIgnoreCase("rated"))) {
 				if (!userSession.getUser().isRegistered()) {
 					userSession.send("You are unregistered - setting to unrated.");
 					p.setRated(false);
@@ -166,10 +166,10 @@ public class MatchCommand extends AbstractCommand {
 			
 			tok = toks.nextToken();
 			
-			if (tok.equalsIgnoreCase("w") || tok.equalsIgnoreCase("white")) {
+			if (tok != null && (tok.equalsIgnoreCase("w") || tok.equalsIgnoreCase("white"))) {
 				p.setColorRequested(MatchParams.ColorRequested.White);
 				colorSet = true;
-			} else if (tok.equalsIgnoreCase("b") || tok.equalsIgnoreCase("black")) {
+			} else if (tok != null && (tok.equalsIgnoreCase("b") || tok.equalsIgnoreCase("black"))) {
 				p.setColorRequested(MatchParams.ColorRequested.Black);
 				colorSet = true;
 			} else {
