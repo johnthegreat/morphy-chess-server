@@ -594,7 +594,7 @@ public class SocketConnectionService implements Service {
 							}
 							LOG.info(c + " " + socketInputForCmd.get(channel.socket()));*/
 							
-							boolean expandAliases = true; 
+							boolean expandAliases = true;
 							if (message.startsWith("$$")) {
 								message = message.substring(2);
 								expandAliases = false;
@@ -619,14 +619,14 @@ public class SocketConnectionService implements Service {
 										.trim();
 								session.getInputBuffer().delete(0,
 										carrageReturnIndex + 1);
-
-								if (command.equals("") || command.equals("\n")
+								
+								if (session.getCurrentState() == SocketChannelUserSession.UserSessionState.LOGIN_NEED_PASSWORD) {
+									handlePasswordPromptText(session, command);
+								} else if (command.equals("") || command.equals("\n")
 										|| command.equals("\n\r")) {
 									session.send("");
 								} else if (session.getCurrentState() == SocketChannelUserSession.UserSessionState.LOGIN_NEED_USERNAME) {
 									handleLoginPromptText(session, command);
-								} else if (session.getCurrentState() == SocketChannelUserSession.UserSessionState.LOGIN_NEED_PASSWORD) {
-									handlePasswordPromptText(session, command);
 								} else {
 									if (expandAliases) {
 										CommandService.getInstance()
