@@ -1,0 +1,8 @@
+Name: unseek
+Usage: unseek [#]
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2016/09/25
+UserLevel: Guest
+Help: Removes a game from the sought list.

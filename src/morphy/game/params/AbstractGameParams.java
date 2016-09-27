@@ -15,12 +15,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package morphy.game;
+package morphy.game.params;
 
-/** A MatchParam instance should also be flexible enough to support a seek. */
-public class MatchParams {
-	public static enum ColorRequested { White,Black,Neither; };
-	
+import morphy.game.Variant;
+
+public class AbstractGameParams implements GameParams {
 	private int time;
 	private int increment;
 	private boolean rated;

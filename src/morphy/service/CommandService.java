@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,58 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import morphy.command.AbortCommand;
-import morphy.command.AcceptCommand;
-import morphy.command.AddListCommand;
-import morphy.command.AllObserversCommand;
-import morphy.command.BclockCommand;
-import morphy.command.BnameCommand;
-import morphy.command.BratingCommand;
-import morphy.command.BugWhoCommand;
-import morphy.command.ClearmessagesCommand;
-import morphy.command.Command;
-import morphy.command.DateCommand;
-import morphy.command.DeclineCommand;
-import morphy.command.ExamineCommand;
-import morphy.command.FingerCommand;
-import morphy.command.GamesCommand;
-import morphy.command.HandlesCommand;
-import morphy.command.HelpCommand;
-import morphy.command.ISetCommand;
-import morphy.command.IVariablesCommand;
-import morphy.command.InchannelCommand;
-import morphy.command.ItShoutCommand;
-import morphy.command.LLoginsCommand;
-import morphy.command.LoginsCommand;
-import morphy.command.MatchCommand;
-import morphy.command.MessageCommand;
-import morphy.command.MessagesCommand;
-import morphy.command.MexamineCommand;
-import morphy.command.MovesCommand;
-import morphy.command.NewsCommand;
-import morphy.command.ObserveCommand;
-import morphy.command.PartnerCommand;
-import morphy.command.PauseCommand;
-import morphy.command.PendingCommand;
-import morphy.command.QtellCommand;
-import morphy.command.QuitCommand;
-import morphy.command.RefreshCommand;
-import morphy.command.RemoveListCommand;
-import morphy.command.SRCommand;
-import morphy.command.SetCommand;
-import morphy.command.ShoutCommand;
-import morphy.command.ShowListCommand;
-import morphy.command.SummonCommand;
-import morphy.command.TellCommand;
-import morphy.command.UnexamineCommand;
-import morphy.command.UptimeCommand;
-import morphy.command.VariablesCommand;
-import morphy.command.WclockCommand;
-import morphy.command.WhoCommand;
-import morphy.command.WithdrawCommand;
-import morphy.command.WnameCommand;
-import morphy.command.WratingCommand;
-import morphy.command.ZNotifyCommand;
+import morphy.command.*;
 import morphy.command.admin.AHelpCommand;
 import morphy.command.admin.AddCommentCommand;
 import morphy.command.admin.AddPlayerCommand;
@@ -151,6 +100,7 @@ public class CommandService implements Service {
 		FingerCommand.class,
 		
 		GamesCommand.class,
+		GetgameCommand.class,
 		
 		HandlesCommand.class,
 		HelpCommand.class,
@@ -175,25 +125,29 @@ public class CommandService implements Service {
 		ObserveCommand.class,
 		
 		PartnerCommand.class,
-		PendingCommand.class,
 		PauseCommand.class,
+		PendingCommand.class,
+		PlayCommand.class,
 		
 		QtellCommand.class,
 		QuitCommand.class,
 		
 		RefreshCommand.class,
 		RemoveListCommand.class,
-		
+			
+		SeekCommand.class,
 		SetCommand.class,
 		ShoutCommand.class,
 		ShowListCommand.class,
 		ShutdownCommand.class,
+		SoughtCommand.class,
 		SRCommand.class,
 		SummonCommand.class,
 		
 		TellCommand.class,
 		
 		UnexamineCommand.class,
+		UnseekCommand.class,
 		UptimeCommand.class,
 		
 		VariablesCommand.class,

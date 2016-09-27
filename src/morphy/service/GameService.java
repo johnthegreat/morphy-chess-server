@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ import java.util.Stack;
 import morphy.game.ExaminedGame;
 import morphy.game.Game;
 import morphy.game.GameInterface;
-import morphy.game.MatchParams;
+import morphy.game.params.GameParams;
+import morphy.game.params.MatchParams;
 import morphy.game.Variant;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
@@ -80,7 +81,15 @@ public class GameService implements Service {
 		stack.push(g.getGameNumber());
 	}
 	
-	public Game createGame(UserSession white,UserSession black,MatchParams params) {
+	public Game createGame(UserSession white,UserSession black,GameParams params, StringBuilder messageToSendWhite, StringBuilder messageToSendBlack) {
+		if (messageToSendWhite == null) {
+			messageToSendWhite = new StringBuilder();
+		}
+		
+		if (messageToSendBlack == null) {
+			messageToSendBlack = new StringBuilder();
+		}
+		
 		Game g = new Game();
 		g.setWhite(white);
 		g.setBlack(black);
@@ -96,24 +105,37 @@ public class GameService implements Service {
 		
 		map.put(g.getWhite(),g);
 		map.put(g.getBlack(),g);
-	
-		String line = "Creating: " + g.getWhite().getUser().getUserName() + " (----) " + g.getBlack().getUser().getUserName() + " (----) " + (g.isRated()?"rated":"unrated") + " " + g.getVariant().name() + " " + g.getTime() + " " + g.getIncrement();
+		
+		String _cachedGin = generateGin(g,true);
+		
+		// TODO: watch out for 0 0 case...
+		String line = String.format("Creating: %s (%s) %s (%s) %s %s %d %d",
+				g.getWhite().getUser().getUserName(), "----", g.getBlack().getUser().getUserName(), "----",
+				g.isRated()?"rated":"unrated", g.getVariant().name(), g.getTime(), g.getIncrement());
 
-		String tmpLine = g.getBlack().getUser().getUserName() + " accepts the match offer.\n\r\n\r"+line+"\n\r"+generateGin(g,true)+"\n\r";
+		//
+		// Send message to white
+		//
+		
+		messageToSendWhite.append(String.format("%s\n\r%s\n\r", line, _cachedGin));
 		if (g.getWhite().getUser().getUserVars().getIVariables().get("gameinfo").equals("1")) {
 			boolean provshow = g.getWhite().getUser().getUserVars().getVariables().get("provshow").equals("1");
-			tmpLine += g.generateGameInfoLine(provshow);
+			messageToSendWhite.append(g.generateGameInfoLine(provshow));
 		}
-		tmpLine += "\n\r"+g.processMoveUpdate(g.getWhite());
-		g.getWhite().send(tmpLine);
+		messageToSendWhite.append("\n\r"+g.processMoveUpdate(g.getWhite()));
+		g.getWhite().send(messageToSendWhite.toString());
 		
-		tmpLine = "You accept the match offer from " + g.getWhite().getUser().getUserName()+".\n\r\n\r"+line+"\n\r"+generateGin(g,true)+"\n\r";
+		//
+		// Send message to black
+		//
+		
+		messageToSendBlack.append(String.format("%s\n\r%s\n\r", line, _cachedGin));
 		if (g.getBlack().getUser().getUserVars().getIVariables().get("gameinfo").equals("1")) {
 			boolean provshow = g.getBlack().getUser().getUserVars().getVariables().get("provshow").equals("1");
-			tmpLine += g.generateGameInfoLine(provshow);
+			messageToSendBlack.append(g.generateGameInfoLine(provshow));
 		}
-		tmpLine += "\n\r"+g.processMoveUpdate(g.getBlack());
-		g.getBlack().send(tmpLine);
+		messageToSendBlack.append("\n\r"+g.processMoveUpdate(g.getBlack()));
+		g.getBlack().send(messageToSendBlack.toString());
 		
 		g.processMoveUpdate(false);
 		

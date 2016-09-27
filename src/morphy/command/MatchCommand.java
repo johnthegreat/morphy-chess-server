@@ -19,7 +19,7 @@ package morphy.command;
 
 import java.util.List;
 
-import morphy.game.MatchParams;
+import morphy.game.params.MatchParams;
 import morphy.game.Variant;
 import morphy.game.request.MatchRequest;
 import morphy.game.request.Request;
@@ -47,6 +47,16 @@ public class MatchCommand extends AbstractCommand {
 		if (arguments.equals("")) {
 			userSession.send(getContext().getUsage());
 			//process(userSession.getUser().getUserName(),userSession);
+			return;
+		}
+		
+		// TODO: get rid of the downcast
+		SocketChannelUserSession socketChannelUserSession = (SocketChannelUserSession) userSession;
+		if (socketChannelUserSession.isPlaying()) {
+			userSession.send("You cannot challenge while you are playing a game.");
+			return;
+		} else if (socketChannelUserSession.isExamining()) {
+			userSession.send("You cannot accept seeks while you are examining a game.");
 			return;
 		}
 		

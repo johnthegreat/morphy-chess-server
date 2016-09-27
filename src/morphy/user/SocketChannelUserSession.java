@@ -37,12 +37,7 @@ import morphy.game.GameInterface;
 import morphy.game.request.MatchRequest;
 import morphy.game.request.PartnershipRequest;
 import morphy.game.request.Request;
-import morphy.service.DBConnectionService;
-import morphy.service.GameService;
-import morphy.service.RequestService;
-import morphy.service.ScreenService;
-import morphy.service.SocketConnectionService;
-import morphy.service.UserService;
+import morphy.service.*;
 import morphy.service.ScreenService.Screen;
 import morphy.utils.BufferUtils;
 import morphy.utils.john.TimeZoneUtils;
@@ -141,25 +136,23 @@ public class SocketChannelUserSession implements UserSession,
 
 	public void disconnect() {
 		if (isConnected()) {
-			try {
-				String v = getNotifyNames();
-				if (!v.equals("")) send("Your departure was noted by the following: " + v);
-				send(ScreenService.getInstance().getScreen(Screen.Logout));
-				if (getUser().isRegistered()) { getUser().getUserVars().dumpToDB(); }
-				channel.close();
-			} catch (Throwable t) {
-				if (LOG.isErrorEnabled())
-					LOG.error("Error disconnecting socket channel", t);
+			String v = getNotifyNames();
+			if (!v.equals("")) send("Your departure was noted by the following: " + v);
+			send(ScreenService.getInstance().getScreen(Screen.Logout));
+			if (getUser().isRegistered()) {
+				// save user variables
+				getUser().getUserVars().dumpToDB();
 			}
 			
+			
 			if (user.getUserName() != null) {
-				UserService.getInstance().removeLoggedInUser(this);
-				SocketConnectionService.getInstance().removeUserSession(this);
-				GameService.getInstance().map.remove(this);
-
 				if (LOG.isInfoEnabled()) {
 					LOG.info("Disconnected user " + user.getUserName());
 				}
+				
+				UserService.getInstance().removeLoggedInUser(this);
+				SocketConnectionService.getInstance().removeUserSession(this);
+				SeekService.getInstance().removeSeeksByUsername(user.getUserName());
 				
 				if (idleLogoutTimer != null) {
 					idleLogoutTimer.cancel();
@@ -186,18 +179,26 @@ public class SocketChannelUserSession implements UserSession,
 				if (g != null) {
 					if (g instanceof Game) {
 						Game gg = (Game)g;
-						gg.setReason(user.getUserName() + " forfeits by disconnection");
+						gg.setReason(String.format("%s forfeits by disconnection", user.getUserName()));
 						gg.setResult(this==gg.getWhite()?"0-1":"1-0");
 						gs.endGame(gg);
 						final String line = "\n{Game " + g.getGameNumber() + " (" + gg.getWhite().getUser().getUserName() + " vs. " + gg.getBlack().getUser().getUserName() + ") " + gg.getReason() + "} " + gg.getResult() + "";
 						if (this != gg.getWhite()) gg.getWhite().send(line);
 						if (this != gg.getBlack()) gg.getBlack().send(line);
 					}
-					
 				}
+				gs.map.remove(this);
 				
 				sendDisconnectPinNotifications();
 				sendDisconnectNotifications();
+			}
+			
+			try {
+				channel.close();
+			} catch (Throwable t) {
+				if (LOG.isErrorEnabled()) {
+					LOG.error("Error disconnecting socket channel", t);
+				}
 			}
 		}
 	}

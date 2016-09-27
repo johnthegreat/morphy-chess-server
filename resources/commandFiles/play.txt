@@ -1,0 +1,8 @@
+Name: play
+Usage: Usage: play [#num | handle]
+Aliases: N/A
+SeeAlso: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2016/09/25
+UserLevel: Guest
+Help: Plays a sought game.

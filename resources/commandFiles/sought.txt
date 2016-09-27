@@ -1,0 +1,8 @@
+Name: sought
+Usage: sought [all]
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2016/09/25
+UserLevel: Guest
+Help: Shows sought games.

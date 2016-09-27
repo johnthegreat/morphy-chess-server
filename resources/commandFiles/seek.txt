@@ -1,0 +1,8 @@
+Name: seek
+Usage: seek [time inc] [rated|unrated] [white|black] [crazyhouse] [suicide] [wild #] [auto|manual] [formula] [rating-range]
+Aliases: N/A
+See Also: N/A
+LastModifiedBy: johnthegreat
+LastModifiedDate: 2016/09/25
+UserLevel: Guest
+Help: Seeks a game.

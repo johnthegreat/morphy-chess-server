@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +45,11 @@ public class UserService implements Service {
 		final ServerListManagerService s = ServerListManagerService
 				.getInstance();
 		return s.isOnList(s.getList("admin"), username);
+	}
+	
+	public boolean isComputer(String username) {
+		final ServerListManagerService s = ServerListManagerService.getInstance();
+		return s.isOnList(s.getList("computer"), username);
 	}
 	
 	public boolean isConsideredStaff(String username) {
@@ -174,7 +179,8 @@ public class UserService implements Service {
 	 * @return If the query to the database server was successful.
 	 */
 	private boolean logConnection(UserSession sess,boolean isConnection) {
-		String query = "INSERT INTO `logins` (`id`,`username`,`timestamp`,`type`,`ipAddress`) VALUES(NULL,'" + sess.getUser().getUserName() + "',UTC_TIMESTAMP(),'" + (isConnection?"login":"logout") + "','" +  SocketUtils.getIpAddress(((SocketChannelUserSession)sess).getChannel().socket()) + "')";
+		String ipAddress = SocketUtils.getIpAddress(((SocketChannelUserSession)sess).getChannel().socket());
+		String query = "INSERT INTO `logins` (`id`,`username`,`timestamp`,`type`,`ipAddress`) VALUES(NULL,'" + sess.getUser().getUserName() + "',UTC_TIMESTAMP(),'" + (isConnection?"login":"logout") + "','" + ipAddress + "')";
 		return DBConnectionService.getInstance().getDBConnection().executeQuery(query);
 	}
 
@@ -216,7 +222,18 @@ public class UserService implements Service {
 				&& userSession.getUser().getUserName() != null) {
 			userNameToSessionMap.remove(userSession.getUser().getUserName()
 					.toLowerCase());
+			removeUserSessionFromUsersLastPersonToldTo(userSession);
 			logConnection(userSession,false);
+		}
+	}
+	
+	private void removeUserSessionFromUsersLastPersonToldTo(UserSession disconnectedUserSession) {
+		// TODO: maybe find a more efficient way to do this?
+		for(UserSession userSession : getLoggedInUsers()) {
+			SocketChannelUserSession socketChannelUserSession = (SocketChannelUserSession)userSession;
+			if (socketChannelUserSession.getLastPersonToldTo() == disconnectedUserSession) {
+				socketChannelUserSession.setLastPersonToldTo(null);
+			}
 		}
 	}
 

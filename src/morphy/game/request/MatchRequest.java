@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 package morphy.game.request;
 
-import morphy.game.MatchParams;
+import morphy.game.params.MatchParams;
 import morphy.service.GameService;
 import morphy.service.RequestService;
 import morphy.user.UserSession;
@@ -44,7 +44,19 @@ public class MatchRequest implements Request {
 
 	public void acceptAction() {
 		GameService gs = GameService.getInstance();
-		gs.createGame(from, to, params);
+		
+		//
+		// TODO: take into consideration the requested color, or the auto-assigned color by the server.
+		//
+		
+		StringBuilder messageToSendWhite = new StringBuilder();
+		messageToSendWhite.append(String.format("%s accepts the match offer.\n\r\n\r", from.getUser().getUserName()));
+		
+		// in this case, to-user is black...
+		StringBuilder messageToSendBlack = new StringBuilder();
+		messageToSendBlack.append(String.format("You accept the match offer from %s.\n\r\n\r", to.getUser().getUserName()));
+		
+		gs.createGame(from, to, params, messageToSendWhite, messageToSendBlack);
 		
 		RequestService rs = RequestService.getInstance();
 		rs.removeRequestFrom(from,this);
