@@ -18,13 +18,15 @@
 package morphy.command;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import morphy.Morphy;
 import morphy.properties.PreferenceKeys;
-import morphy.service.PreferenceService;
 import morphy.user.UserLevel;
 import morphy.utils.MorphyStringTokenizer;
 import morphy.utils.ResourceUtils;
@@ -49,12 +51,12 @@ public class CommandContext {
 		BufferedReader reader = null;
 		try {
 
-			reader = new BufferedReader(new InputStreamReader(ResourceUtils
-					.getResourceAsInputStream(Morphy.COMMAND_FILES_DIR + "/"
-							+ commandFileName + ".txt")));
+			File commandFilesDir = Morphy.getInstance().getMorphyFileProvider().getCommandFilesDirectory();
+			String filePath = String.format("%s/%s.txt",commandFilesDir.getAbsolutePath(), commandFileName);
+			reader = new BufferedReader(new FileReader(new File(filePath)));
 
 			StringBuilder helpContent = new StringBuilder(1200);
-			String lineTerminator = PreferenceService.getInstance().getString(
+			String lineTerminator = Morphy.getInstance().getMorphyPreferences().getString(
 					PreferenceKeys.SocketConnectionLineDelimiter);
 
 			boolean isParsingContent = false;

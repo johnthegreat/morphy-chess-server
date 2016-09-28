@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008,2009  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008,2009, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,5 +30,9 @@ public enum PreferenceKeys {
 	DatabaseHostAddress,
 	DatabaseName,
 	DatabaseUsername,
-	DatabasePassword
+	DatabasePassword,
+	FilesMorphyMainDir,
+	FilesMorphyResourcesDir,
+	FilesMorphyCommandFilesDir,
+	FilesMorphyScreenFilesDir
 };

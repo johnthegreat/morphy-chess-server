@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008,2009  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008,2009, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ import java.nio.ByteBuffer;
 
 import morphy.Morphy;
 import morphy.properties.PreferenceKeys;
-import morphy.service.PreferenceService;
 
 public class BufferUtils {
 	public static ByteBuffer createBuffer(String message) {
@@ -29,8 +28,7 @@ public class BufferUtils {
 		try {
 			buffer
 					.put(message
-							.getBytes(PreferenceService
-									.getInstance()
+							.getBytes(Morphy.getInstance().getMorphyPreferences()
 									.getString(
 											PreferenceKeys.SocketConnectionServiceCharEncoding)));
 		} catch (Throwable t) {

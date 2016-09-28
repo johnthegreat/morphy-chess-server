@@ -17,6 +17,7 @@
  */
 package morphy.service;
 
+import java.io.File;
 import java.util.TreeMap;
 
 import morphy.Morphy;
@@ -41,16 +42,11 @@ public class ScreenService {
 	TreeMap<Screen, String> screenToMessage = new TreeMap<Screen, String>();
 
 	private ScreenService() {
-		screenToMessage.put(Screen.Login, FileUtils
-				.fileAsString(Morphy.RESOURCES_DIR + "/screenFiles/login.txt").replaceAll("\\n","\r\n"));
-		System.out.println(screenToMessage.get(Screen.Login));
-		screenToMessage
-				.put(Screen.Logout, FileUtils.fileAsString(Morphy.RESOURCES_DIR
-						+ "/screenFiles/logout.txt"));
-		screenToMessage.put(Screen.SuccessfulLogin, FileUtils
-				.fileAsString(Morphy.RESOURCES_DIR
-						+ "/screenFiles/successfulLogin.txt"));
-
+		File screenFilesDirectory = Morphy.getInstance().getMorphyFileProvider().getScreenFilesDirectory();
+		
+		screenToMessage.put(Screen.Login, FileUtils.fileAsString(screenFilesDirectory.getAbsolutePath() + "/login.txt").replaceAll("\\n","\r\n"));
+		screenToMessage.put(Screen.Logout, FileUtils.fileAsString(screenFilesDirectory.getAbsolutePath() + "/logout.txt"));
+		screenToMessage.put(Screen.SuccessfulLogin, FileUtils.fileAsString(screenFilesDirectory.getAbsolutePath() +  "/successfulLogin.txt"));
 	}
 
 	public void dispose() {

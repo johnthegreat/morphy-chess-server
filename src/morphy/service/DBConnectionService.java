@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,11 +20,13 @@ package morphy.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import morphy.Morphy;
+import morphy.properties.MorphyPreferences;
 import morphy.properties.PreferenceKeys;
 import morphy.utils.john.DBConnection;
 
 public class DBConnectionService implements Service {
-	protected static Log LOG = LogFactory.getLog(DBConnectionService.class);
+	protected static final Log LOG = LogFactory.getLog(DBConnectionService.class);
 
 	private static DBConnectionService service = new DBConnectionService();
 	public static DBConnectionService getInstance() {
@@ -38,9 +40,13 @@ public class DBConnectionService implements Service {
 			LOG.info("Initialized DBConnectionService.");
 		}
 		
-		PreferenceService preferenceService = PreferenceService.getInstance();
+		MorphyPreferences morphyPreferences = Morphy.getInstance().getMorphyPreferences();
 		
-		DBConnection c = new DBConnection(preferenceService.getString(PreferenceKeys.DatabaseHostAddress),preferenceService.getString(PreferenceKeys.DatabaseName),preferenceService.getString(PreferenceKeys.DatabaseUsername),preferenceService.getString(PreferenceKeys.DatabasePassword));
+		DBConnection c = new DBConnection(
+				morphyPreferences.getString(PreferenceKeys.DatabaseHostAddress),
+				morphyPreferences.getString(PreferenceKeys.DatabaseName),
+				morphyPreferences.getString(PreferenceKeys.DatabaseUsername),
+				morphyPreferences.getString(PreferenceKeys.DatabasePassword));
 		Connection = c;
 	}
 	

@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import morphy.Morphy;
+import morphy.properties.MorphyPreferences;
 import morphy.properties.PreferenceKeys;
 
 import org.apache.commons.logging.Log;
@@ -57,8 +58,7 @@ public class ThreadService implements Service {
 
 	protected static final Log LOG = LogFactory.getLog(ThreadService.class);
 
-	public static final String THREAD_DUMP_FILE_PATH = Morphy.USER_DIRECTORY
-			+ "/logs/threaddump_" + System.currentTimeMillis() + ".txt";
+	public String THREAD_DUMP_FILE_PATH = null;
 
 	private static final ThreadService instance = new ThreadService();
 
@@ -69,7 +69,7 @@ public class ThreadService implements Service {
 	/**
 	 * Dumps stack traces of all threads to threaddump.txt.
 	 */
-	public static void threadDump() {
+	public void threadDump() {
 		LOG
 				.error("All threads are in use. Logging the thread stack trace to threaddump.txt and exiting.");
 		final ThreadMXBean threads = ManagementFactory.getThreadMXBean();
@@ -113,11 +113,17 @@ public class ThreadService implements Service {
 	protected boolean isDisposed = false;
 
 	private ThreadService() {
-		executor.setCorePoolSize(PreferenceService.getInstance().getInt(
+		MorphyPreferences morphyPreferences = Morphy.getInstance().getMorphyPreferences();
+		
+		THREAD_DUMP_FILE_PATH = Morphy.getInstance().getMorphyFileProvider()
+				.getUserDirectory()
+				+ "/logs/threaddump_" + System.currentTimeMillis() + ".txt";
+		
+		executor.setCorePoolSize(morphyPreferences.getInt(
 				PreferenceKeys.ThreadServiceCoreThreads));
-		executor.setMaximumPoolSize(PreferenceService.getInstance().getInt(
+		executor.setMaximumPoolSize(morphyPreferences.getInt(
 				PreferenceKeys.ThreadServiceMaxThreads));
-		executor.setKeepAliveTime(PreferenceService.getInstance().getInt(
+		executor.setKeepAliveTime(morphyPreferences.getInt(
 				PreferenceKeys.ThreadServiceKeepAlive), TimeUnit.SECONDS);
 		executor.prestartAllCoreThreads();
 		if (LOG.isInfoEnabled()) {

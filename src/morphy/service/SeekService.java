@@ -102,7 +102,6 @@ public class SeekService implements Service {
 		return seekCollection.toArray(new Seek[seekCollection.size()]);
 	}
 	
-	@Override
 	public void dispose() {
 		this.seekMap.clear();
 		this.seekIndicesStack.clear();

@@ -37,6 +37,7 @@ import java.util.Set;
 
 import morphy.Morphy;
 import morphy.channel.Channel;
+import morphy.properties.MorphyPreferences;
 import morphy.properties.PreferenceKeys;
 import morphy.service.ScreenService.Screen;
 import morphy.user.PersonalList;
@@ -130,9 +131,9 @@ public class SocketConnectionService implements Service {
 	};
 
 	private SocketConnectionService() {
+		MorphyPreferences morphyPreferences = Morphy.getInstance().getMorphyPreferences();
 		try {
-			maxCommunicationSizeBytes = PreferenceService
-					.getInstance()
+			maxCommunicationSizeBytes = morphyPreferences
 					.getInt(
 							PreferenceKeys.SocketConnectionServiceMaxCommunicationBytes);
 			serverSocketChannel = ServerSocketChannel.open();
@@ -159,7 +160,7 @@ public class SocketConnectionService implements Service {
 				}
 			}*/
 			
-			serverSocketChannel.socket().bind( new java.net.InetSocketAddress( PreferenceService.getInstance().getInt(PreferenceKeys.SocketConnectionServicePorts.toString()) ));
+			serverSocketChannel.socket().bind( new java.net.InetSocketAddress( morphyPreferences.getInt(PreferenceKeys.SocketConnectionServicePorts.toString()) ));
 			serverSocketSelector = Selector.open();
 			serverSocketChannel.register(serverSocketSelector,
 					SelectionKey.OP_ACCEPT);
@@ -474,9 +475,11 @@ public class SocketConnectionService implements Service {
 			try {
 				charsRead = channel.read(buffer);
 			} catch (IOException cce) {
-				channel.close();
-				if (LOG.isInfoEnabled()) {
-					LOG.info("Closed channel " + channel);
+				if (channel.isOpen()) {
+					channel.close();
+					if (LOG.isInfoEnabled()) {
+						LOG.info("Closed channel " + channel);
+					}
 				}
 			}
 			if (charsRead == -1) {
@@ -484,8 +487,7 @@ public class SocketConnectionService implements Service {
 			} else if (charsRead > 0) {
 				buffer.flip();
 				Charset charset = Charset
-						.forName(PreferenceService
-								.getInstance()
+						.forName(Morphy.getInstance().getMorphyPreferences()
 								.getString(
 										PreferenceKeys.SocketConnectionServiceCharEncoding));
 				CharsetDecoder decoder = charset.newDecoder();

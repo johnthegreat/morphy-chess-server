@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class DBConnection {
-	protected static Log LOG = LogFactory.getLog(DBConnection.class);
+	protected static final Log LOG = LogFactory.getLog(DBConnection.class);
 	
 	private enum DBType { MySQL,Derby; }
 	

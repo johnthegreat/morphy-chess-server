@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import morphy.Morphy;
 import morphy.properties.PreferenceKeys;
 import morphy.service.GameService;
-import morphy.service.PreferenceService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
 
@@ -51,7 +50,7 @@ public class UptimeCommand extends AbstractCommand {
 		b.append("There are currently " + us.getLoggedInUserCount() + " players, with a high of XXX since last restart.\n");
 		b.append("There are currently " + gs.getCurrentNumberOfGames() + " games, with a high of " + gs.getHighestNumberOfGames() + " since last restart.\n");
 
-		b.append("Player limit: " + PreferenceService.getInstance().getInt(PreferenceKeys.ThreadServiceMaxThreads) + " users (+ 10 admins)\n");
+		b.append("Player limit: " + Morphy.getInstance().getMorphyPreferences().getInt(PreferenceKeys.ThreadServiceMaxThreads) + " users (+ 10 admins)\n");
 		b.append("Unregistered user restriction at XXX users.\n");
 		
 		userSession.send(b.toString());
