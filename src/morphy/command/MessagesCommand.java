@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.user.UserSession;
 import morphy.utils.john.TimeZoneUtils;
 
@@ -125,7 +125,7 @@ public class MessagesCommand extends AbstractCommand {
 		// list of ids to mark as read in the database
 		List<Integer> ids = new ArrayList<Integer>();
 		try {
-			ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+			ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 			int numMessages = 0;
 			
 			while(rs.next()) {
@@ -144,7 +144,7 @@ public class MessagesCommand extends AbstractCommand {
 			// mark these messages as read
 			// only if they aren't already marked as read
 			if (ids.size() != 0) { 
-				DBConnectionService.getInstance().getDBConnection().executeQuery("UPDATE `messages` SET `read` = '1' WHERE " + formatIdListForQuery("id",ids)); 
+				DatabaseConnectionService.getInstance().getDBConnection().executeQuery("UPDATE `messages` SET `read` = '1' WHERE " + formatIdListForQuery("id",ids));
 			}
 			return;
 		} catch(SQLException e) {
@@ -155,7 +155,7 @@ public class MessagesCommand extends AbstractCommand {
 	/** Returns a list of message ids from <tt>username</tt> to the user with the specified id (<tt>myUserId</tt>). */
 	private List<Integer> getMessageIdsFromUsername(String username,int myUserId) {
 		String query = "SELECT u1.`username` FROM `messages` m INNER JOIN `users` u1 ON (u1.`id` = m.`from_user_id`) WHERE m.to_user_id = '" + myUserId + "'";
-		ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		
 		// allocate variables
 		List<Integer> ids = new ArrayList<Integer>();

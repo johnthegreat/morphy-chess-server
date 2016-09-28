@@ -18,10 +18,10 @@
 package morphy.command.admin;
 
 import morphy.command.AbstractCommand;
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 
 public class AddPlayerCommand extends AbstractCommand {
 	public AddPlayerCommand() {
@@ -64,7 +64,7 @@ public class AddPlayerCommand extends AbstractCommand {
 		
 		// do add comment, insert to db, etc here.
 		
-		DBConnection dbconn = DBConnectionService.getInstance().getDBConnection();
+		DatabaseConnection dbconn = DatabaseConnectionService.getInstance().getDBConnection();
 		String query = "INSERT INTO `users` VALUES(NULL,'" + playername + "','" + password + "',NULL,CURRENT_TIMESTAMP,'Player',0,'" + emailaddress + "')";
 		dbconn.executeQuery(query);
 		

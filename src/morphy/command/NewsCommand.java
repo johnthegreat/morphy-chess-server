@@ -21,9 +21,9 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.user.UserSession;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 import morphy.utils.john.TimeZoneUtils;
 
 public class NewsCommand extends AbstractCommand {
@@ -57,8 +57,8 @@ public class NewsCommand extends AbstractCommand {
 			
 			String query = "SELECT n.id,n.name,n.content,n.posted_timestamp,n.expires_timestamp,u.username FROM newsitems n INNER JOIN users u ON (u.id = n.posted_by_user_id) WHERE n.id = '" + id + "' && n.visibility = 'Public'"; 
 			
-			DBConnectionService service = DBConnectionService.getInstance();
-			DBConnection conn = service.getDBConnection();
+			DatabaseConnectionService service = DatabaseConnectionService.getInstance();
+			DatabaseConnection conn = service.getDBConnection();
 			java.sql.ResultSet rs = conn.executeQueryWithRS(query);
 			try {
 				if(rs.next()) {
@@ -105,8 +105,8 @@ public class NewsCommand extends AbstractCommand {
 			
 			SimpleDateFormat f = new SimpleDateFormat("EEE, MMM d");
 			
-			DBConnectionService service = DBConnectionService.getInstance();
-			DBConnection conn = service.getDBConnection();
+			DatabaseConnectionService service = DatabaseConnectionService.getInstance();
+			DatabaseConnection conn = service.getDBConnection();
 			java.sql.ResultSet rs = conn.executeQueryWithRS(query);
 			try {
 				StringBuilder str = new StringBuilder(300);

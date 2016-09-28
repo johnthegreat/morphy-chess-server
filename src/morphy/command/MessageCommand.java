@@ -23,7 +23,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.service.UserService;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
@@ -92,7 +92,7 @@ public class MessageCommand extends AbstractCommand {
 				if (!UserService.getInstance().isAdmin(userSession.getUser().getUserName()) &&
 					!UserService.getInstance().isAdmin(toUsername)) {
 					String query = "SELECT COUNT(*) FROM `messages` WHERE `to_user_id` = '" + toUserSession.getUser().getDBID() + "';";
-					ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+					ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 					try {
 						if (rs.next()) {
 							int numMessages = rs.getInt(1);
@@ -156,7 +156,7 @@ public class MessageCommand extends AbstractCommand {
 				message = message.replace("'","''").replace("\\","\\\\"); // db security... make sure to decode on the other side!
 				String query = "INSERT INTO `messages` (`id`,`from_user_id`,`to_user_id`,`message`,`timestamp`,`read`) " + 
 				"VALUES(NULL," + userSession.getUser().getDBID() + "," + toUserSession.getUser().getDBID() + ",'" + message + "',UTC_TIMESTAMP(),'0');";
-				DBConnectionService.getInstance().getDBConnection().executeQuery(query);
+				DatabaseConnectionService.getInstance().getDBConnection().executeQuery(query);
 				
 				if (emailMess) {
 					// send e-mail to the recipient user here

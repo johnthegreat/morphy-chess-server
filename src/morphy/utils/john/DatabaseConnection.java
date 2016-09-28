@@ -27,19 +27,19 @@ import morphy.Morphy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class DBConnection {
-	protected static final Log LOG = LogFactory.getLog(DBConnection.class);
+public class DatabaseConnection {
+	protected static final Log LOG = LogFactory.getLog(DatabaseConnection.class);
 	
 	private enum DBType { MySQL,Derby; }
 	
 	private DBType type;
 	private Connection c;
 	
-	public DBConnection() {
+	public DatabaseConnection() {
 		this("localhost","morphyics","root","abcdef");
 	}
 	
-	public DBConnection(String address,String db,String username,String password) {
+	public DatabaseConnection(String address, String db, String username, String password) {
 		try {
 			DBType type = DBType.MySQL;
 			this.type = type;

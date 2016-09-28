@@ -214,7 +214,7 @@ public class SocketChannelUserSession implements UserSession,
 		// Notifications are only sent if this user is registered.
 		if (getUser().isRegistered()) {
 			String query = "SELECT u.username FROM personallist pl INNER JOIN personallist_entry ple ON (pl.id = ple.personallist_id) INNER JOIN users u ON (u.id = pl.user_id) WHERE pl.`name` = 'notify' && ple.`value` LIKE '" + getUser().getUserName() + "';";
-			DBConnectionService dbcs = DBConnectionService.getInstance();
+			DatabaseConnectionService dbcs = DatabaseConnectionService.getInstance();
 			ResultSet resultSet = dbcs.getDBConnection().executeQueryWithRS(query);
 			try {
 				UserService us = UserService.getInstance();

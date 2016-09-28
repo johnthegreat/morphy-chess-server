@@ -22,9 +22,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import morphy.service.DatabaseConnectionService;
 import org.apache.commons.lang.StringUtils;
 
-import morphy.service.DBConnectionService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
 
@@ -67,7 +67,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 			
 			int numMessages = 0;
 			String query = "SELECT COUNT(*) FROM `messages` WHERE `to_user_id` = '" + userSession.getUser().getDBID() + "';";
-			ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+			ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 			try {
 				if (rs.next()) {
 					numMessages = rs.getInt(1);
@@ -85,7 +85,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 				// delete all messages
 				
 				query = "DELETE FROM `messages` WHERE `to_user_id` = '" + userSession.getUser().getDBID() + "'";
-				boolean executed = DBConnectionService.getInstance().getDBConnection().executeQuery(query);
+				boolean executed = DatabaseConnectionService.getInstance().getDBConnection().executeQuery(query);
 				if (executed) {
 					userSession.send("Messages cleared.");
 					return;
@@ -114,7 +114,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 					String username = UserService.getInstance().correctCapsUsername(arguments);
 					
 					query = "SELECT `id` FROM `messages` WHERE `from_user_id` = '" + id + "' ORDER BY `id` ASC";
-					rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+					rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 					try {
 						List<Integer> ids = new ArrayList<Integer>();
 						while(rs.next()) {
@@ -125,7 +125,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 							return;
 						} else {
 							query = "DELETE FROM `messages` WHERE " + MessagesCommand.formatIdListForQuery("id",ids);
-							boolean executed = DBConnectionService.getInstance().getDBConnection().executeQuery(query);
+							boolean executed = DatabaseConnectionService.getInstance().getDBConnection().executeQuery(query);
 							if (executed) {
 								userSession.send("Messages from " + username + " cleared.");
 								return;
@@ -146,7 +146,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 				"FROM `messages` m INNER JOIN `users` u1 ON (u1.`id` = m.`from_user_id`) " +
 				"WHERE m.to_user_id = '" + userSession.getUser().getDBID() + "'" +
 				"ORDER BY m.`id` ASC";
-				rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+				rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 				try {
 					// the "ids" variable contains the actual message ids as stored in the database
 					// and NOT the psuedo message number as the user thinks.
@@ -162,7 +162,7 @@ public class ClearmessagesCommand extends AbstractCommand {
 					}
 					if (ids.size() > 0) {
 						query = "DELETE FROM `messages` WHERE " + MessagesCommand.formatIdListForQuery("id",ids);
-						boolean executed = DBConnectionService.getInstance().getDBConnection().executeQuery(query);
+						boolean executed = DatabaseConnectionService.getInstance().getDBConnection().executeQuery(query);
 						if (executed) {
 							userSession.send((rownums.size()==1?"Message":"Messages") + " " + rownums.toString() + " cleared.");
 							return;

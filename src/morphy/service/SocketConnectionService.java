@@ -50,7 +50,7 @@ import morphy.user.UserVars;
 import morphy.utils.BufferUtils;
 import morphy.utils.MorphyStringUtils;
 import morphy.utils.SocketUtils;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -273,7 +273,7 @@ public class SocketConnectionService implements Service {
 		if (! isGuest) {
 			
 			try {
-				DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+				DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 				java.sql.Statement s = conn.getStatement();
 				s.execute("SELECT `password` FROM `users` WHERE `username` = '" + name + "'");
 				java.sql.ResultSet r = s.getResultSet();
@@ -330,7 +330,7 @@ public class SocketConnectionService implements Service {
 		boolean isHeadAdmin = false;
 		
 		if (!isGuest) {
-			DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+			DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 			
 			String query = "SELECT pl.`name`,pe.`value` FROM personallist pl INNER JOIN personallist_entry pe ON (pe.personallist_id = pl.id) WHERE pl.user_id = '" + userSession.getUser().getDBID() + "'";
 			java.sql.ResultSet rs = conn.executeQueryWithRS(query);
@@ -425,7 +425,7 @@ public class SocketConnectionService implements Service {
 			}
 		}
 		
-		DBConnectionService dbcs = DBConnectionService.getInstance();
+		DatabaseConnectionService dbcs = DatabaseConnectionService.getInstance();
 		
 		java.util.List<String> arrivalNotedBy = new java.util.ArrayList<String>(10);
 		// this query gets all usernames with this player on their notify list.

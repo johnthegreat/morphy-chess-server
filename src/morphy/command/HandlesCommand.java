@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import morphy.Morphy;
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.user.UserSession;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 
 public class HandlesCommand extends AbstractCommand {
 
@@ -50,9 +50,9 @@ public class HandlesCommand extends AbstractCommand {
 			return;
 		}
 		
-		DBConnectionService dbcs = DBConnectionService.getInstance();
+		DatabaseConnectionService dbcs = DatabaseConnectionService.getInstance();
 		
-		DBConnection conn = dbcs.getDBConnection();
+		DatabaseConnection conn = dbcs.getDBConnection();
 		String query = "SELECT `username` FROM `users` WHERE `username` LIKE '" + arguments + "%' LIMIT 100";
 		ResultSet rs = conn.executeQueryWithRS(query);
 		List<String> arr = new ArrayList<String>();

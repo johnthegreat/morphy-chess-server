@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import morphy.Morphy;
-import morphy.service.DBConnectionService;
-import morphy.utils.john.DBConnection;
+import morphy.service.DatabaseConnectionService;
+import morphy.utils.john.DatabaseConnection;
 
 public class User {
 	public static final int MAX_LIST_SIZE = 50;
@@ -56,7 +56,7 @@ public class User {
 	}
 	
 	private void loadFromDB() {
-		DBConnection c = DBConnectionService.getInstance().getDBConnection();
+		DatabaseConnection c = DatabaseConnectionService.getInstance().getDBConnection();
 		java.sql.ResultSet r = c.executeQueryWithRS("SELECT `email`,UNIX_TIMESTAMP(`registeredSince`) FROM `users` WHERE `username` = '" + getUserName() + "'");
 		try {
 			if (r.next()) {

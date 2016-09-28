@@ -22,10 +22,10 @@ import java.sql.Statement;
 
 import morphy.Morphy;
 import morphy.command.AbstractCommand;
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 
 public class AddCommentCommand extends AbstractCommand {
 	public AddCommentCommand() {
@@ -72,8 +72,8 @@ public class AddCommentCommand extends AbstractCommand {
 			int userId = s.getUser().getDBID();
 			int commentFileId = 0;
 			String query = "SELECT `id` FROM `commentfile` WHERE `user_id` = '" + userId + "'";
-			DBConnectionService dbService = DBConnectionService.getInstance();
-			DBConnection conn = dbService.getDBConnection();
+			DatabaseConnectionService dbService = DatabaseConnectionService.getInstance();
+			DatabaseConnection conn = dbService.getDBConnection();
 			ResultSet rs = conn.executeQueryWithRS(query);
 			try {
 				if (rs != null) {

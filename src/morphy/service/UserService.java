@@ -26,7 +26,7 @@ import java.util.TreeMap;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
 import morphy.utils.SocketUtils;
-import morphy.utils.john.DBConnection;
+import morphy.utils.john.DatabaseConnection;
 import morphy.utils.john.ServerList;
 
 import org.apache.commons.logging.Log;
@@ -181,7 +181,7 @@ public class UserService implements Service {
 	private boolean logConnection(UserSession sess,boolean isConnection) {
 		String ipAddress = SocketUtils.getIpAddress(((SocketChannelUserSession)sess).getChannel().socket());
 		String query = "INSERT INTO `logins` (`id`,`username`,`timestamp`,`type`,`ipAddress`) VALUES(NULL,'" + sess.getUser().getUserName() + "',UTC_TIMESTAMP(),'" + (isConnection?"login":"logout") + "','" + ipAddress + "')";
-		return DBConnectionService.getInstance().getDBConnection().executeQuery(query);
+		return DatabaseConnectionService.getInstance().getDBConnection().executeQuery(query);
 	}
 
 	public void dispose() {
@@ -250,7 +250,7 @@ public class UserService implements Service {
 			return getUserSession(username).getUser().isRegistered();
 		} else {
 			try {
-				DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+				DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 				java.sql.ResultSet results = conn
 						.executeQueryWithRS("SELECT `id` FROM `users` WHERE `username` LIKE '"
 								+ username + "'");
@@ -267,7 +267,7 @@ public class UserService implements Service {
 	/** Returns the user's id if successful, or 0 otherwise. */
 	public int getDBID(String username) {
 		try {
-			DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+			DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 			java.sql.ResultSet results = conn
 					.executeQueryWithRS("SELECT `id` FROM `users` WHERE `username` LIKE '"
 							+ username + "'");
@@ -284,7 +284,7 @@ public class UserService implements Service {
 	 * This fetches right from disk, and doesn't use data in memory whatsoever. */
 	public String correctCapsUsername(String username) {
 		try {
-			DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+			DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 			java.sql.ResultSet results = conn.executeQueryWithRS("SELECT `username` FROM `users` WHERE `username` LIKE '" + username + "'");
 			if (results.next()) {
 				return results.getString(1);

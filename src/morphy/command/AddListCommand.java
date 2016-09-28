@@ -25,7 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import morphy.Morphy;
 import morphy.channel.Channel;
 import morphy.service.ChannelService;
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.service.ServerListManagerService;
 import morphy.service.UserService;
 import morphy.user.PersonalList;
@@ -153,7 +153,7 @@ public class AddListCommand extends AbstractCommand {
 			int dbid = userSession.getUser().getDBID();
 			boolean isGuest = dbid == 0;
 			if (!isGuest) {
-				DBConnectionService dbcs = DBConnectionService.getInstance();
+				DatabaseConnectionService dbcs = DatabaseConnectionService.getInstance();
 				dbcs.getDBConnection().executeQueryWithRS("INSERT IGNORE INTO personallist VALUES(NULL," + dbid + ",'" + listName + "');");
 				Integer listid = userSession.getUser().getPersonalListDBIDs().get(list);
 				if (listid == null) {

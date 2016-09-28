@@ -20,10 +20,10 @@ package morphy.command;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import morphy.service.DatabaseConnectionService;
 import org.apache.commons.lang.StringUtils;
 
 import morphy.Morphy;
-import morphy.service.DBConnectionService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
 
@@ -81,7 +81,7 @@ public class LoginsCommand extends AbstractCommand {
 		int count = 0;
 		
 		String query = "SELECT COUNT(*) FROM `logins` WHERE `username` LIKE '" + username + "'";
-		ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		try {
 			if (rs.next()) {
 				count = rs.getInt(1);
@@ -93,7 +93,7 @@ public class LoginsCommand extends AbstractCommand {
 		if (limit > count) limit = count;
 		
 		query = "SELECT `id` FROM (SELECT `id` FROM `logins` WHERE `username` LIKE '" + username + "' ORDER BY `id` DESC) t LIMIT " + limit;
-		rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		int[] arr = new int[limit];
 		try {
 			int index = 0;
@@ -124,7 +124,7 @@ public class LoginsCommand extends AbstractCommand {
 		}
 		queryBuilder.append(") ORDER BY `id` ASC");
 		query = queryBuilder.toString();
-		rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		try {
 			while(rs.next()) {
 				String line = "";

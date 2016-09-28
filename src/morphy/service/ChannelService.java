@@ -20,6 +20,7 @@ package morphy.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import morphy.utils.john.DatabaseConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -27,7 +28,6 @@ import morphy.channel.Channel;
 import morphy.user.PersonalList;
 import morphy.user.UserLevel;
 import morphy.user.UserSession;
-import morphy.utils.john.DBConnection;
 import morphy.utils.john.ServerList;
 
 public class ChannelService implements Service {
@@ -70,8 +70,8 @@ public class ChannelService implements Service {
 	
 	private void loadChannelsFromDatabase() {
 		channels.clear();
-		DBConnectionService s = DBConnectionService.getInstance();
-		DBConnection conn = s.getDBConnection();
+		DatabaseConnectionService s = DatabaseConnectionService.getInstance();
+		DatabaseConnection conn = s.getDBConnection();
 		java.sql.ResultSet r = conn.executeQueryWithRS("SELECT chnum,chname,chdescription,level,canJoinLists FROM channels ORDER BY chnum ASC");
 		try {
 			while(r.next()) {
@@ -98,8 +98,8 @@ public class ChannelService implements Service {
 	}
 	
 	private void dumpChannelsToDatabase() {
-		DBConnectionService s = DBConnectionService.getInstance();
-		DBConnection conn = s.getDBConnection();
+		DatabaseConnectionService s = DatabaseConnectionService.getInstance();
+		DatabaseConnection conn = s.getDBConnection();
 		for(Channel c : channels) {
 			String txt = "";
 			ServerList[] lists = c.getCanJoinLists();

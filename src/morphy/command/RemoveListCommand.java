@@ -22,7 +22,7 @@ import java.util.List;
 
 import morphy.channel.Channel;
 import morphy.service.ChannelService;
-import morphy.service.DBConnectionService;
+import morphy.service.DatabaseConnectionService;
 import morphy.service.ServerListManagerService;
 import morphy.service.UserService;
 import morphy.user.PersonalList;
@@ -136,7 +136,7 @@ public class RemoveListCommand extends AbstractCommand {
 			int dbid = userSession.getUser().getDBID();
 			boolean isGuest = dbid == 0;
 			if (!isGuest) {
-				DBConnectionService dbcs = DBConnectionService.getInstance();
+				DatabaseConnectionService dbcs = DatabaseConnectionService.getInstance();
 				String query = "DELETE FROM personallist_entry WHERE personallist_id = " + userSession.getUser().getPersonalListDBIDs().get(list) + " && value = '" + value + "';";
 				dbcs.getDBConnection().executeQuery(query);
 			}

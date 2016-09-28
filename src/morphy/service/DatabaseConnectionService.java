@@ -17,32 +17,32 @@
  */
 package morphy.service;
 
+import morphy.utils.john.DatabaseConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import morphy.Morphy;
 import morphy.properties.MorphyPreferences;
 import morphy.properties.PreferenceKeys;
-import morphy.utils.john.DBConnection;
 
-public class DBConnectionService implements Service {
-	protected static final Log LOG = LogFactory.getLog(DBConnectionService.class);
+public class DatabaseConnectionService implements Service {
+	protected static final Log LOG = LogFactory.getLog(DatabaseConnectionService.class);
 
-	private static DBConnectionService service = new DBConnectionService();
-	public static DBConnectionService getInstance() {
+	private static DatabaseConnectionService service = new DatabaseConnectionService();
+	public static DatabaseConnectionService getInstance() {
 		return service;
 	}
 	
-	private DBConnection Connection;
+	private DatabaseConnection Connection;
 	
-	public DBConnectionService() {
+	public DatabaseConnectionService() {
 		if (LOG.isInfoEnabled()) {
-			LOG.info("Initialized DBConnectionService.");
+			LOG.info("Initialized DatabaseConnectionService.");
 		}
 		
 		MorphyPreferences morphyPreferences = Morphy.getInstance().getMorphyPreferences();
 		
-		DBConnection c = new DBConnection(
+		DatabaseConnection c = new DatabaseConnection(
 				morphyPreferences.getString(PreferenceKeys.DatabaseHostAddress),
 				morphyPreferences.getString(PreferenceKeys.DatabaseName),
 				morphyPreferences.getString(PreferenceKeys.DatabaseUsername),
@@ -50,7 +50,7 @@ public class DBConnectionService implements Service {
 		Connection = c;
 	}
 	
-	public DBConnection getDBConnection() {
+	public DatabaseConnection getDBConnection() {
 		return Connection;
 	}
 	
@@ -58,7 +58,7 @@ public class DBConnectionService implements Service {
 		//Connection.closeConnection();
 		
 		if (LOG.isInfoEnabled()) {
-			LOG.info("DBConnectionService disposed.");
+			LOG.info("DatabaseConnectionService disposed.");
 		}
 	}
 

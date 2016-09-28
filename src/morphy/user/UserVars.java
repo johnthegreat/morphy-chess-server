@@ -24,8 +24,8 @@ import java.util.HashMap;
 import morphy.Morphy;
 import morphy.game.style.Style12;
 import morphy.game.style.StyleInterface;
-import morphy.service.DBConnectionService;
-import morphy.utils.john.DBConnection;
+import morphy.service.DatabaseConnectionService;
+import morphy.utils.john.DatabaseConnection;
 
 public class UserVars {
 	private User user;
@@ -119,7 +119,7 @@ public class UserVars {
 	}
 	
 	public void loadFromDB() {
-		DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+		DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 		ResultSet r = conn.executeQueryWithRS("SELECT * FROM `user_vars` WHERE `user_id` = (SELECT `id` FROM `users` WHERE `username` = '" + getUser().getUserName() + "')");
 		try {
 			ResultSetMetaData meta = r.getMetaData();
@@ -142,7 +142,7 @@ public class UserVars {
 		
 		// variables are now only committed to database on logout.
 		/*String query = "UPDATE `user_vars` SET `" + variable + "` = '" + value + "' WHERE `user_id` = (SELECT `id` FROM `users` WHERE `username` = '" + getUser().getUserName() + "')";
-		DBConnection conn = new DBConnection();
+		DatabaseConnection conn = new DatabaseConnection();
 		conn.executeQuery(query);
 		conn.closeConnection();*/
 	}
@@ -165,7 +165,7 @@ public class UserVars {
 		
 		String username = getUser().getUserName();
 		Object query = null;
-		DBConnection conn = DBConnectionService.getInstance().getDBConnection();
+		DatabaseConnection conn = DatabaseConnectionService.getInstance().getDBConnection();
 		ResultSet rs = conn.executeQueryWithRS("SELECT `id` FROM `users` WHERE `username` = '" + username + "'");
 		int userid = 0;
 		try { 

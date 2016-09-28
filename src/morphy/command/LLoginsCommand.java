@@ -22,10 +22,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import morphy.service.DatabaseConnectionService;
 import org.apache.commons.lang.StringUtils;
 
 import morphy.Morphy;
-import morphy.service.DBConnectionService;
 import morphy.service.UserService;
 import morphy.user.UserSession;
 
@@ -59,7 +59,7 @@ public class LLoginsCommand extends AbstractCommand {
 		
 		int count = 0;
 		String query = "SELECT COUNT(*) FROM `logins`";
-		ResultSet rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		ResultSet rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		try {
 			if (rs.next()) {
 				count = rs.getInt(1);
@@ -71,7 +71,7 @@ public class LLoginsCommand extends AbstractCommand {
 		if (limit > count) limit = count;
 		
 		query = "SELECT `id` FROM `logins` ORDER BY `id` DESC LIMIT " + limit;
-		rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		int[] arr = new int[limit];
 		try {
 			int index = 0;
@@ -86,7 +86,7 @@ public class LLoginsCommand extends AbstractCommand {
 		Map<String,Boolean> registeredCache = new HashMap<String,Boolean>();
 		
 		query = "SELECT `id`,`username`,CONVERT_TZ(`timestamp`,'UTC','SYSTEM'),`type`" + (isAdmin?",`ipAddress`":"") + " FROM logins WHERE " + MessagesCommand.formatIdListForQuery("id", arr) + " ORDER BY id ASC";
-		rs = DBConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
+		rs = DatabaseConnectionService.getInstance().getDBConnection().executeQueryWithRS(query);
 		try {
 			while(rs.next()) {
 				String line = "";
