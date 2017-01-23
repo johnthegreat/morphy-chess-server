@@ -35,6 +35,10 @@ import morphy.command.admin.NukeCommand;
 import morphy.command.admin.ShutdownCommand;
 import morphy.game.ExaminedGame;
 import morphy.game.Game;
+import morphy.game.Move;
+import morphy.move.parser.ChesspressoMoveParser;
+import morphy.move.parser.NotationParser;
+import morphy.move.parser.MoveParseResult;
 import morphy.user.SocketChannelUserSession;
 import morphy.utils.MorphyStringUtils;
 
@@ -42,9 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import board.Board;
-import board.exception.IllegalMoveException;
-import board.exception.WrongColorToMoveException;
+import chesspresso.move.IllegalMoveException;
 
 public class CommandService implements Service {
 	protected static Log LOG = LogFactory.getLog(CommandService.class);
@@ -230,38 +232,43 @@ public class CommandService implements Service {
 	public void processGameMove(SocketChannelUserSession userSession,String command) {
 		morphy.game.GameInterface g = GameService.getInstance().map.get(userSession);
 		if (g != null) {
-			try {
-				if (g instanceof Game) {
-					Game gg = (Game)g;
-					/*if (!gg.isClockTicking()) {
-						userSession.send("The clock is paused, use \"unpause\" to resume.\n\n"+gg.processMoveUpdate(userSession));
-						return;
-					}*/
-					boolean isWhiteMove = gg.getWhite().equals(userSession);
-					long last = gg.getTimeLastMoveMade();
-					if (last == 0L) last = System.currentTimeMillis();
-					gg.getBoard().move(isWhiteMove,command);
-					gg.getBoard().getLatestMove().setPrinter(GameService.getInstance().style12Printer);
-					long newt = gg.touchLastMoveMadeTime();
-					if (isWhiteMove) { gg.setWhiteClock((gg.getWhiteClock()-(int)(newt-last)) + (gg.getIncrement()*1000)); }
-					else { gg.setBlackClock((gg.getBlackClock()-(int)(newt-last)) + (gg.getIncrement()*1000)); }
-					
-					gg.processMoveUpdate(true);
+			if (g instanceof Game) {
+				Game gg = (Game)g;
+				/*if (!gg.isClockTicking()) {
+					userSession.send("The clock is paused, use \"unpause\" to resume.\n\n"+gg.processMoveUpdate(userSession));
+					return;
+				}*/
+				boolean isWhiteMove = gg.getWhite().equals(userSession);
+				long last = gg.getTimeLastMoveMade();
+				if (last == 0L) {
+					last = System.currentTimeMillis();
 				}
-				if (g instanceof ExaminedGame) {
-					ExaminedGame gg = (ExaminedGame)g;
-					System.out.println("gg.isWhitesMove = " + gg.isWhitesMove());
-					//System.out.println("gg.getBoard().isWhitesMove = " + gg.getBoard().getLatestMove().isWhitesMove());
-					boolean b = gg.getBoard().move(gg.isWhitesMove(),command);
-					if (b) {
-						gg.setUserLastMoveMadeBy(userSession);
-						gg.getBoard().getLatestMove().setPrinter(GameService.getInstance().style12Printer);
-						gg.setWhitesMove(!gg.isWhitesMove());
-						gg.processMoveUpdate(true);
-					}
+				
+				// now, parse the SAN into a move.
+				
+				try {
+					NotationParser notationParser = new ChesspressoMoveParser();
+					MoveParseResult moveParseResult = notationParser.parseMove(gg.getBoard().getGame().getPosition(), command, isWhiteMove);
+					gg.getBoard().getGame().getPosition().doMove(moveParseResult.getInternalMove());
+				} catch(IllegalMoveException e) {
+					userSession.send("Illegal move (" + command + ").");
+					System.err.print(e.getMessage());
 				}
-			} catch(WrongColorToMoveException e) { userSession.send("It is not your move."); System.err.print(e.getMessage()); }
-			catch(IllegalMoveException e) { userSession.send("Illegal move (" + command + ")."); System.err.print(e.getMessage()); }
+				
+				long newt = gg.touchLastMoveMadeTime();
+				if (isWhiteMove) {
+					gg.setWhiteClock((gg.getWhiteClock()-(int)(newt-last)) + (gg.getIncrement()*1000));
+				} else {
+					gg.setBlackClock((gg.getBlackClock()-(int)(newt-last)) + (gg.getIncrement()*1000));
+				}
+				gg.processMoveUpdate(true);
+			}
+			
+			if (g instanceof ExaminedGame) {
+				ExaminedGame gg = (ExaminedGame)g;
+				
+				gg.processMoveUpdate(true);
+			}
 		} else {
 			userSession.send("You are not playing or examining a game.");
 		}
@@ -269,12 +276,15 @@ public class CommandService implements Service {
 	}
 	
 	public void processCommandAndCheckAliases(String command,SocketChannelUserSession userSession) {
-		command = command.trim();	
+		command = command.trim();
 		
 		if (command.equals("0-0")) command = "O-O";
 		if (command.equals("0-0-0")) command = "O-O-O";
-		boolean isMove = Board.isValidSAN(command);
-		if (isMove && command.startsWith("+")) isMove = false;
+		boolean isMove = Move.isValidSAN(command);
+		// think there is a bug in the isValidSAN, where "+" is considered valid.
+		if (isMove && command.startsWith("+")) {
+			isMove = false;
+		}
 		if (isMove) {
 			processGameMove(userSession, command);
 			return;

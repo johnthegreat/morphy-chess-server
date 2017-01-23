@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,8 +47,8 @@ public class AbortCommand extends AbstractCommand {
 		RequestService rs = RequestService.getInstance();
 		List<Request> list = rs.findAllToRequestsByType(userSession,AbortRequest.class);
 		if (list == null || list.size() == 0) {
-			int move = g.getBoard().getPositions().size()/2;
-			if (move == 0) {
+			int moveNumber = g.getBoard().getGame().getPosition().getPlyNumber() / 2;
+			if (moveNumber == 0) {
 				g.setReason("Game aborted on move 1");
 				g.setResult("*");
 				GameService.getInstance().endGame(g);

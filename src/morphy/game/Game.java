@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,12 +20,9 @@ package morphy.game;
 import java.util.ArrayList;
 import java.util.List;
 
-import board.Board;
-import board.Piece;
-
-import morphy.service.GameService;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
+import morphy.utils.ChesspressoUtils;
 
 public class Game implements GameInterface {
 	private int gameNumber;
@@ -52,8 +49,6 @@ public class Game implements GameInterface {
 		observers = new ArrayList<UserSession>(0);
 		
 		setBoard(new Board());
-		getBoard().getLatestMove().setPrinter(GameService.getInstance().style12Printer);
-		getBoard().getLatestMove().setCastlingRights("KQkq");
 	}
 	
 	public Game(UserSession white,UserSession black,int time,int increment) {
@@ -102,25 +97,11 @@ public class Game implements GameInterface {
 	}
 	
 	public int getWhiteBoardStrength() {
-		int strength = 0;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_PAWN).length*1;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_KNIGHT).length*3;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_BISHOP).length*3;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_ROOK).length*5;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_KING).length*0;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.WHITE_QUEEN).length*9;
-		return strength;
+		return ChesspressoUtils.getWhiteBoardStrength(getBoard().getGame().getPosition());
 	}
 	
 	public int getBlackBoardStrength() {
-		int strength = 0;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_PAWN).length*1;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_KNIGHT).length*3;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_BISHOP).length*3;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_ROOK).length*5;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_KING).length*0;
-		strength += board.getLatestMove().getAllSquaresWithPiece(Piece.BLACK_QUEEN).length*9;
-		return strength;
+		return ChesspressoUtils.getBlackBoardStrength(getBoard().getGame().getPosition());
 	}
 
 	public void setWhite(UserSession white) {

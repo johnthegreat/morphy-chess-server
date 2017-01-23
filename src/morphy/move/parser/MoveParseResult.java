@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010, 2017 http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,18 +15,28 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package morphy.game;
+package morphy.move.parser;
 
-import chesspresso.game.Game;
-
-public class Board {
-	private Game game;
+public class MoveParseResult {
+	public String input;
+	public String fromSquare;
+	public String toSquare;
+	public String prettyNotation;
+	public String verboseNotation;
+	public String promotionPiece;
 	
-	public Board() {
-		game = new Game();
+	// TODO: breaks encapsulation
+	private short internalMove;
+	
+	public MoveParseResult() {
+		
 	}
-	
-	public Game getGame() {
-		return game;
+
+	public short getInternalMove() {
+		return internalMove;
+	}
+
+	public void setInternalMove(short internalMove) {
+		this.internalMove = internalMove;
 	}
 }

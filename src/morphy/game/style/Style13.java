@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,14 +17,8 @@
  */
 package morphy.game.style;
 
-import org.apache.commons.lang.StringUtils;
-
-import board.Piece;
-import board.PositionState;
-
 import morphy.game.GameInterface;
 import morphy.user.UserSession;
-import morphy.user.UserVars;
 
 public class Style13 implements StyleInterface {
 
@@ -38,7 +32,8 @@ public class Style13 implements StyleInterface {
 	// http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
 	// http://bluesock.org/~willg/dev/ansi.html#ansicodes
 	public String print(UserSession userSession, GameInterface g) {
-		StringBuilder b = new StringBuilder();
+		return "";
+		/*StringBuilder b = new StringBuilder();
 		
 		UserVars uv = userSession.getUser().getUserVars();
 		boolean millis = uv.getIVariables().get("ms").equals("1");
@@ -77,7 +72,7 @@ public class Style13 implements StyleInterface {
 		for(int i=0;i<8;i++) { b.append(" "+c+" "); c++; }
 		
 		
-		return b.toString();
+		return b.toString();*/
 	}
 
 }

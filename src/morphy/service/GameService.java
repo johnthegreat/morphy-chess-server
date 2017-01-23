@@ -26,7 +26,6 @@ import morphy.game.ExaminedGame;
 import morphy.game.Game;
 import morphy.game.GameInterface;
 import morphy.game.params.GameParams;
-import morphy.game.params.MatchParams;
 import morphy.game.Variant;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
@@ -34,12 +33,9 @@ import morphy.user.UserSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import board.printer.Style12Printer;
-
 public class GameService implements Service {
 	protected static Log LOG = LogFactory.getLog(GameService.class);
 	private static final GameService singletonInstance = new GameService();
-	public Style12Printer style12Printer = Style12Printer.getSingletonInstance();
 	
 	protected int mostConcurrentGames = 0;
 	protected int stackSize = 0;

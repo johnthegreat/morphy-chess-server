@@ -8,7 +8,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit4_4.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
-	<classpathentry kind="lib" path="C:/Users/John/Desktop/consulting/Bots/javachesslib.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector/mysql-connector-java-5.1.39-bin.jar"/>
+	<classpathentry kind="lib" path="lib/Chesspresso-lib.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

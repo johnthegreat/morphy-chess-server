@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ public class PauseCommand extends AbstractCommand {
 		} else {
 			if (g instanceof Game) {
 				Game gg = (Game)g;
-				int numMoves = g.getBoard().getPositions().size();
+				int numMoves = g.getBoard().getGame().getPosition().getPlyNumber();
 				//boolean isBughouse = gg.getVariant() == Variant.bughouse || gg.getVariant() == Variant.frbughouse;
 				if (!gg.isClockTicking() && numMoves < 2) {
 					userSession.send("The clock is not ticking yet.");
