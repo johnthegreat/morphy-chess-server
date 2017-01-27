@@ -146,7 +146,7 @@ public class FingerCommand extends AbstractCommand {
 			if (lvl == UserLevel.HeadAdmin) str.append("Head Administrator");
 			str.append("\n\n");
 		}
-		str.append("Timeseal 1 : Off\n\n");
+		str.append(String.format("Timeseal %s : %s\n\n","1", query.usingTimeseal ? "On" : "Off"));
 		
 		if (showNotes) {
 			List<String> notes = query.getUser().getUserInfoLists().get(UserInfoList.notes);

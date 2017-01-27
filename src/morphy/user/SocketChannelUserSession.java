@@ -67,6 +67,7 @@ public class SocketChannelUserSession implements UserSession,
 	protected boolean isExamining = false;
 	protected List<Integer> gamesObserving;
 	protected UserSessionState currentState;
+	public boolean usingTimeseal = false;
 	
 	protected List<SocketChannelUserSession> multipleLogins;
 	protected SocketChannelUserSession multipleLoginsParent;
