@@ -17,7 +17,10 @@
  */
 package morphy.timeseal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+
+import org.apache.commons.lang.ArrayUtils;
 
 public class TimesealCoder extends Object {
 	public static byte[] initialTimesealStringBytes = "TIMESEAL2|OpenSeal|OpenSeal|".getBytes();
@@ -35,6 +38,8 @@ public class TimesealCoder extends Object {
 	 * FICS will send a "[G]\0" periodically, maybe more than once. You are *REQUIRED* to ACK *every time* one is received.
 	 * The ACK will be "\0029\n" in Timeseal-encoded format.
 	 * 
+	 * Some clients (e.g. Thief) may send multiple Timeseal-encoded strings together as one string, separated by \n or (byte)10
+	 * Programmer should not pass their entire message to the decode() method, but should split out each Timeseal-encoded message and pass that.
 	 */
 
 	//
@@ -133,13 +138,14 @@ public class TimesealCoder extends Object {
 	
 	public TimesealParseResult decode(byte[] bytes) {
 		byte[] key = timesealKey;
-		byte[] tmp = bytes;
+		byte[] tmp = ArrayUtils.clone(bytes);
 		
 		int n;
 		byte offset;
 		int l = tmp.length;
 		if (l % 12 != 1) {
 			// malformed?
+			//System.out.println("malformed");
 		}
 		offset = tmp[l-1];
 		for(n = 0;n<l;n++) {
@@ -148,6 +154,7 @@ public class TimesealCoder extends Object {
 			tmp[n] = (byte) ((tmp[n]+32) ^ key[(n+offset+0x80)%key.length]);
 			if ((tmp[n] & 0x80) == 0) {
 				// malformed?
+				//System.out.println("malformed");
 			}
 			tmp[n] ^= 0x80;
 		}
@@ -161,6 +168,7 @@ public class TimesealCoder extends Object {
 		for(n=0;n < tmp.length;n++) {
 			if ((tmp[n] >> 5) == 0) {
 				// malformed?
+				//System.out.println("malformed");
 			}
 		}
 		
@@ -188,5 +196,29 @@ public class TimesealCoder extends Object {
 			}
 		}
 		return -1;
+	}
+	
+	//
+	
+	
+	public static byte[][] splitBytes(byte[] bytes, byte splitByte) {
+		byte[] bytesToProcess = bytes;
+		
+		ArrayList<Byte[]> bytesList = new ArrayList<Byte[]>();
+		int idx;
+		while((idx = ArrayUtils.indexOf(bytesToProcess, splitByte)) != -1) {
+			bytesList.add(ArrayUtils.toObject(Arrays.copyOfRange(bytesToProcess, 0, idx)));
+			if (idx + 1 < bytesToProcess.length) {
+				bytesToProcess = Arrays.copyOfRange(bytesToProcess, idx + 1, bytesToProcess.length);
+			}
+		}
+		bytesList.add(ArrayUtils.toObject(bytesToProcess));
+		
+		byte[][] newBytes = new byte[bytesList.size()][];
+		Byte[][] objBytesArray = bytesList.toArray(new Byte[bytesList.size()][0]);
+		for(int i=0;i<objBytesArray.length;i++) {
+			newBytes[i] = ArrayUtils.toPrimitive(objBytesArray[i]);
+		}
+		return newBytes;
 	}
 }

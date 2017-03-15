@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (c) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (c) 2008-2010, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -502,8 +502,11 @@ public class SocketConnectionService implements Service {
 				
 				SocketChannelUserSession socketChannelUserSession = socketToSession.get(channel.socket());
 				
-				System.out.println("IN: " + new String(buffer.array()));
-				if (looksLikeTimesealInit(buffer.array())) {
+				byte[] bytes = buffer.array();
+				buffer.position(0);
+				
+				System.out.println("IN: " + new String(bytes).trim());
+				if (looksLikeTimesealInit(bytes)) {
 					if (socketChannelUserSession.usingTimeseal == false) {
 						// First time?
 						socketChannelUserSession.usingTimeseal = true;
@@ -512,16 +515,29 @@ public class SocketConnectionService implements Service {
 				}
 				
 				if (socketChannelUserSession.usingTimeseal) {
-					TimesealParseResult parseResult = timesealCoder.decode(Arrays.copyOfRange(buffer.array(), 0, charsRead-1 /* \n or 10 */));
-					if (parseResult != null) {
-						System.out.println(parseResult.getTimestamp());
-						parseResult.setMessage(parseResult.getMessage() + "\n");
-						System.out.println(parseResult.getMessage());
-						
-						buffer = ByteBuffer.allocate(parseResult.getMessage().length());
-						buffer.put(parseResult.getMessage().getBytes(charset));
-						buffer.position(0);
+					/*
+					 * Clients may pass multiple Timeseal-encoded messages at once.
+					 * We need to parse each separated message to Timeseal decoder as necessary. 
+					 */
+					
+					byte[] bytesToDecode = Arrays.copyOfRange(bytes, 0, charsRead-1 /* \n or 10 */);
+					byte[][] splitBytes = TimesealCoder.splitBytes(bytesToDecode, (byte)10);
+					
+					buffer = ByteBuffer.allocate(bytesToDecode.length);
+					buffer.position(0);
+					for(int i=0;i<splitBytes.length;i++) {
+						byte[] splitBytesToDecode = splitBytes[i];
+						TimesealParseResult parseResult = timesealCoder.decode(splitBytesToDecode);
+						if (parseResult != null) {
+							System.out.println(parseResult.getTimestamp());
+							parseResult.setMessage(parseResult.getMessage() + "\n");
+							System.out.println(parseResult.getMessage());
+							
+							buffer.put(parseResult.getMessage().getBytes(charset));
+						}
 					}
+					//buffer.position(0);
+					buffer.flip();
 				}
 				
 				CharsetDecoder decoder = charset.newDecoder();
@@ -542,8 +558,8 @@ public class SocketConnectionService implements Service {
 	}
 	
 	private boolean looksLikeTimesealInit(byte[] bytes) {
-		return //Arrays.copyOfRange(bytes, 0, 8) == new byte[] { -101, -128, 113, -128, -98, -128, -128, -98 } ||
-				 Arrays.copyOfRange(bytes, 0, 8) == new byte[] { -124, -128, 113, -128, -97, -111, -128, -98 };
+		return Arrays.equals(Arrays.copyOfRange(bytes, 0, 8), new byte[] { -101, -128, 113, -128, -98, -128, -128, -98 }) ||
+				 Arrays.equals(Arrays.copyOfRange(bytes, 0, 8), new byte[] { -124, -128, 113, -128, -97, -111, -128, -98 });
 	}
 
 	protected void sendWithoutPrompt(String message,
