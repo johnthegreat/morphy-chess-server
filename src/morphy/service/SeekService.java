@@ -18,9 +18,12 @@
 package morphy.service;
 
 import morphy.game.Seek;
+import morphy.user.SocketChannelUserSession;
+import morphy.user.UserSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.nio.channels.SocketChannel;
 import java.util.*;
 
 /**
@@ -57,6 +60,7 @@ public class SeekService implements Service {
 		seek.setSeekIndex(seekIndex);
 		
 		this.seekMap.put(seekIndex, seek);
+		this.notifyAllSeekers(seek);
 		return seek;
 	}
 	
@@ -95,6 +99,55 @@ public class SeekService implements Service {
 		} else {
 			return null;
 		}
+	}
+	
+	private void notifyAllSeekers(Seek seek) {
+		UserService s = UserService.getInstance();
+		UserSession[] arr = s.fetchAllUsersWithVariable("seek","1");
+		String line = generateSeekLine(seek);
+		for(UserSession sess : arr) {
+			// TODO: get rid of this downcast
+			SocketChannelUserSession userSession = (SocketChannelUserSession)sess;
+			
+			if (seek.getUserSession() == userSession && userSession.getUser().getUserVars().getVariables().get("showownseek").equals("0")) {
+				continue;
+			}
+			
+			if (userSession.isExamining() || userSession.isPlaying()) {
+				// it looks like FICS does not send seek=1 message to people who are currently playing or examining.
+				continue;
+			}
+			userSession.send(line);
+		}
+	}
+	
+	private String generateSeekLine(Seek seek) {
+		//GuestWNKT (++++) seeking 10 0 unrated blitz ("play 100" to respond)
+		//GuestWNKT (++++) seeking 0 0 unrated untimed ("play 100" to respond)
+		
+		String variantName = seek.getSeekParams().getVariant().name();
+		if (seek.getSeekParams().getTime() == 0 && seek.getSeekParams().getIncrement() == 0) {
+			variantName = "untimed";
+		}
+		
+		String seekFlags = "";
+		if (seek.isUseManual()) {
+			seekFlags += " m";
+		}
+		if (seek.isUseFormula()) {
+			seekFlags += " f";
+		}
+		
+		String seekLine = String.format("%s (++++) seeking %d %d %s %s%s (\"play %d\" to respond)",
+				seek.getUserSession().getUser().getUserName(),
+				seek.getSeekParams().getTime(),
+				seek.getSeekParams().getIncrement(),
+				seek.getSeekParams().isRated() ? "rated" : "unrated",
+				variantName,
+				seekFlags,
+				seek.getSeekIndex());
+		
+		return seekLine;
 	}
 	
 	public Seek[] getAllSeeks() {
