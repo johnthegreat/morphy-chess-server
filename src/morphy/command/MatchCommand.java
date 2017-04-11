@@ -56,7 +56,7 @@ public class MatchCommand extends AbstractCommand {
 			userSession.send("You cannot challenge while you are playing a game.");
 			return;
 		} else if (socketChannelUserSession.isExamining()) {
-			userSession.send("You cannot accept seeks while you are examining a game.");
+			userSession.send("You cannot challenge while you are examining a game.");
 			return;
 		}
 		

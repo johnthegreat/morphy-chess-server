@@ -96,7 +96,7 @@ public class Style12 implements StyleInterface {
 			} else if (pos < 0 && !amIPlaying) {
 				myrelation = -3;
 			} else {
-				boolean whiteToMove = position.getLastMove() == null ? true : !position.getLastMove().isWhiteMove();
+				boolean whiteToMove = position.getToPlay() == Chess.WHITE;
 				if (amIWhite == whiteToMove) {
 					myrelation = 1;
 				} else {
@@ -114,13 +114,10 @@ public class Style12 implements StyleInterface {
 		int lag = 0; // requires timeseal...
 		int moveNumber = numMoves/2;
 		if (moveNumber == 0) moveNumber = 1;
-		isPaused = ((isBughouse||numMoves>2)&&!isExaminedGame); 
+		isPaused = ((isBughouse||numMoves>=2)&&!isExaminedGame);
 		
 		
-		String whoseMove = position.getLastMove() == null ? "W" : ( position.getLastMove().isWhiteMove() ? "B" : "W" );
-		if (numMoves == 1) {
-			whoseMove = "W";
-		}
+		String whoseMove = position.getToPlay() == Chess.WHITE ? "W" : "B";
 		
 		String sign = "";
 		

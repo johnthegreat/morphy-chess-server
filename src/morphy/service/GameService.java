@@ -66,15 +66,35 @@ public class GameService implements Service {
 	}
 	
 	public void endGame(Game g) {
-		sendGin(g,false);
+		String ginLine = generateGin(g,false);
+		
+		String toSendWhite = "";
+		String toSendBlack = "";
+		// TODO: implement and adjust ratings
+		if (g.isRated()) {
+			
+		} else {
+			toSendWhite = "No ratings adjustment done.";
+			toSendBlack = "No ratings adjustment done.";
+		}
 		
 		((SocketChannelUserSession)g.getWhite()).setPlaying(false);
+		g.getWhite().send(ginLine + "\n\n" + toSendWhite);
 		((SocketChannelUserSession)g.getBlack()).setPlaying(false);
+		g.getBlack().send(ginLine + "\n\n" + toSendBlack);
+		
 		map.put(g.getWhite(),null);
 		map.put(g.getBlack(),null);
 		
+		String line = String.format("Removing game %s from observation list.",g.getGameNumber());
+		for(UserSession observer : g.getObservers()) {
+			observer.send(line);
+		}
+		
 		// recycle this game number
 		stack.push(g.getGameNumber());
+		
+		sendGin(g,false);
 	}
 	
 	public Game createGame(UserSession white,UserSession black,GameParams params, StringBuilder messageToSendWhite, StringBuilder messageToSendBlack) {

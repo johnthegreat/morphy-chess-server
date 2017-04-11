@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
+import chesspresso.Chess;
 import morphy.command.*;
 import morphy.command.admin.AHelpCommand;
 import morphy.command.admin.AddCommentCommand;
@@ -246,13 +247,20 @@ public class CommandService implements Service {
 				
 				// now, parse the SAN into a move.
 				
-				try {
-					NotationParser notationParser = new ChesspressoMoveParser();
-					MoveParseResult moveParseResult = notationParser.parseMove(gg.getBoard().getGame().getPosition(), command, isWhiteMove);
-					gg.getBoard().getGame().getPosition().doMove(moveParseResult.getInternalMove());
-				} catch(IllegalMoveException e) {
-					userSession.send("Illegal move (" + command + ").");
-					System.err.print(e.getMessage());
+				int myColor = isWhiteMove ? Chess.WHITE : Chess.BLACK;
+				if (gg.getBoard().getGame().getPosition().getToPlay() == myColor) {
+					try {
+						NotationParser notationParser = new ChesspressoMoveParser();
+						MoveParseResult moveParseResult = notationParser.parseMove(gg.getBoard().getGame().getPosition(), command, isWhiteMove);
+						gg.getBoard().getGame().getPosition().doMove(moveParseResult.getInternalMove());
+					} catch(IllegalMoveException e) {
+						userSession.send(String.format("Illegal move (%s).",command));
+						System.err.print(e.getMessage());
+						return;
+					}
+				} else {
+					userSession.send("It is not your move.");
+					return;
 				}
 				
 				long newt = gg.touchLastMoveMadeTime();
@@ -262,6 +270,25 @@ public class CommandService implements Service {
 					gg.setBlackClock((gg.getBlackClock()-(int)(newt-last)) + (gg.getIncrement()*1000));
 				}
 				gg.processMoveUpdate(true);
+				
+				// Check for game end
+				if (gg.getBoard().getGame().getPosition().isMate()) {
+					// game over
+					String result = gg.getBoard().getGame().getPosition().getLastMove().isWhiteMove() ? "1-0" : "0-1";
+					g.setResult(result);
+					String reason = String.format("%s checkmated",(gg.getBoard().getGame().getPosition().getLastMove().isWhiteMove() ?
+							gg.getBlack().getUser().getUserName() : gg.getWhite().getUser().getUserName()));
+					g.setReason(reason);
+					
+					GameService.getInstance().endGame(gg);
+					return;
+				} else if (gg.getBoard().getGame().getPosition().isStaleMate()) {
+					// game over
+					g.setResult("1/2-1/2");
+					g.setReason("Game drawn by stalemate");
+					GameService.getInstance().endGame(gg);
+					return;
+				}
 			}
 			
 			if (g instanceof ExaminedGame) {

@@ -42,93 +42,31 @@ public class ChesspressoMoveParser implements NotationParser {
 			notation = "O-O-O";
 		}
 		
-		char[] chars = notation.toCharArray();
-		int last = chars.length - 1;
-		int next = 0;
-		if (chars[last] == '+' || chars[last] == '#') {
-			last--;
+		int promoPiece = Chess.NO_PIECE;
+		int idx = notation.indexOf("=");
+		if (idx > -1) {
+			char ch = notation.charAt(idx+1);
+			promoPiece = Chess.charToPiece(ch);
+			notation = notation.substring(0,idx);
 		}
 		
 		short move = Move.ILLEGAL_MOVE;
 		
-		/*
-		 * PLEASE NOTE:
-		 * 
-		 * This algorithm to convert SAN into moves is very naive, simple, and problematic.
-		 * It determines whether the move is a pawn move by looking at case of the first character of the notation.
-		 * This fails to allow for sloppy SAN notation such as "bc4" that we need to support.
-		 * Also during testing, when entering "e7e5" (using Thief interface), the black king disappeared.
-		 * Please refactor this code as soon as possible in order to be more correct.
-		 * 
-		 */
-		
-		// CASTLING
-		
-		if (last > 3 && chars[0] == 'O' && chars[1] == '-' && chars[2] == 'O') {
-			if (last >= 5 && chars[3] == '-' && chars[4] == 'O') {
-				move = Move.getLongCastle(toPlay);
-			} else {
-				move = Move.getShortCastle(toPlay);
-			}
-		} else {
+		if (notation.equalsIgnoreCase("O-O")) {
+			move = Move.getShortCastle(toPlay);
+		} else if (notation.equalsIgnoreCase("O-O-O")) {
+			move = Move.getLongCastle(toPlay);
+		} else if (notation.length() == 4) {
+			// for now, assuming from square, to square, e.g. e2e4, d7d5
 			
-			char ch = chars[0];
-			if (ch >= 'a' && ch <= 'h') {
-				// pawn move
-				int col = Chess.NO_COL;
-				if (1 > last) { /* illegal */ }
-				if (chars[1] == 'x') {
-					col = Chess.charToCol(chars[1]);
-					next = 2;
-				}
-				
-				if (next + 1 > last) { /* illegal */ }
-				int toSqi = Chess.strToSqi(chars[next], chars[next + 1]);
-				next += 2;
-				
-				int promo = Chess.NO_PIECE;
-				if (next <= last && chars[next] == '=') {
-					if (next < last) {
-						promo = Chess.charToPiece(chars[next + 1]);
-					} else {
-						/* illegal */
-					}
-				}
-				
-				move = position.getPawnMove(col, toSqi, promo);
-			} else {
-				// non-pawn move
-				
-				int piece = Chess.charToPiece(ch);
-				if (last < 2) { /* illegal */ }
-				int toSqi = Chess.strToSqi(chars[last - 1], chars[last]);
-				last -= 2;
-				if (chars[last] == 'x') {
-					last--;
-				}
-				
-				int row = Chess.NO_ROW, col = Chess.NO_COL;
-				while (last >= 1) {
-					char rowColChar = chars[last];
-					int r = Chess.charToRow(rowColChar);
-					if (r != Chess.NO_ROW) {
-						row = r;
-						last--;
-					} else {
-						int c = Chess.charToCol(rowColChar);
-						if (c != Chess.NO_COL) {
-							col = c;
-						} else {
-							/* illegal */
-						}
-						last--;
-					}
-				}
-				move = position.getPieceMove(piece, col, row, toSqi);
-			}
+			String fromSq = notation.substring(0,2);
+			String toSq = notation.substring(2,4);
 			
+			int fromSqInt = Chess.strToSqi(fromSq);
+			int toSqInt = Chess.strToSqi(toSq);
+			
+			move = position.getMove(fromSqInt,toSqInt,promoPiece);
 		}
-		
 		
 		
 		MoveParseResult moveParseResult = new MoveParseResult();

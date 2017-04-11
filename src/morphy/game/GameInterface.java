@@ -29,7 +29,11 @@ public interface GameInterface extends Comparable<GameInterface> {
 	public boolean isRated();
 	public long getTimeGameStarted();
 	public Variant getVariant();
+	public String getReason();
+	public String getResult();
 	
+	public void setReason(String reason);
+	public void setResult(String result);
 	public void setGameNumber(int num);
 	public void setTime(int time);
 	public void setIncrement(int increment);
