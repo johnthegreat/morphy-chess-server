@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (c) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (c) 2008-2010, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,6 +41,8 @@ import morphy.channel.Channel;
 import morphy.properties.MorphyPreferences;
 import morphy.properties.PreferenceKeys;
 import morphy.service.ScreenService.Screen;
+import morphy.timeseal.TimesealCoder;
+import morphy.timeseal.TimesealParseResult;
 import morphy.user.PersonalList;
 import morphy.user.PlayerType;
 import morphy.user.SocketChannelUserSession;
@@ -70,6 +73,9 @@ public class SocketConnectionService implements Service {
 
 	protected Map<Socket, SocketChannelUserSession> socketToSession = new HashMap<Socket, SocketChannelUserSession>();
 	protected Map<Socket, StringBuilder> socketInputForCmd = new HashMap<Socket, StringBuilder>();
+	
+	protected TimesealCoder timesealCoder;
+	protected String MSG_TIMESEAL_OK = "MSG_TIMESEAL_OK";
 	
 	protected Runnable selectSocketRunnable = new Runnable() {
 		public void run() {
@@ -172,6 +178,8 @@ public class SocketConnectionService implements Service {
 			LOG.info("Initialized Socket Connection Service host:"
 					+ serverSocketChannel.socket().getInetAddress() + " "
 					+ serverSocketChannel.socket().getLocalPort());
+			
+			this.timesealCoder = new TimesealCoder();
 		} catch (Throwable t) {
 			if (LOG.isErrorEnabled())
 				LOG.error("Error initializing SocketConnectionService", t);
@@ -468,7 +476,7 @@ public class SocketConnectionService implements Service {
 		// Notification: ChannelBot has arrived and isn't on your notify list.
 	}
 
-	protected String readMessage(SocketChannel channel) {
+	protected synchronized String readMessage(SocketChannel channel) {
 		try {
 			ByteBuffer buffer = ByteBuffer.allocate(maxCommunicationSizeBytes);
 			int charsRead = -1;
@@ -486,13 +494,58 @@ public class SocketConnectionService implements Service {
 				return null;
 			} else if (charsRead > 0) {
 				buffer.flip();
+				
 				Charset charset = Charset
 						.forName(Morphy.getInstance().getMorphyPreferences()
 								.getString(
 										PreferenceKeys.SocketConnectionServiceCharEncoding));
+				
+				SocketChannelUserSession socketChannelUserSession = socketToSession.get(channel.socket());
+				
+				byte[] bytes = buffer.array();
+				buffer.position(0);
+				
+				System.out.println("IN: " + new String(bytes).trim());
+				if (looksLikeTimesealInit(bytes)) {
+					if (socketChannelUserSession.usingTimeseal == false) {
+						// First time?
+						socketChannelUserSession.usingTimeseal = true;
+						return MSG_TIMESEAL_OK;
+					}
+				}
+				
+				if (socketChannelUserSession.usingTimeseal) {
+					/*
+					 * Clients may pass multiple Timeseal-encoded messages at once.
+					 * We need to parse each separated message to Timeseal decoder as necessary. 
+					 */
+					
+					byte[] bytesToDecode = Arrays.copyOfRange(bytes, 0, charsRead-1 /* \n or 10 */);
+					byte[][] splitBytes = TimesealCoder.splitBytes(bytesToDecode, (byte)10);
+					
+					buffer = ByteBuffer.allocate(bytesToDecode.length);
+					buffer.position(0);
+					for(int i=0;i<splitBytes.length;i++) {
+						byte[] splitBytesToDecode = splitBytes[i];
+						TimesealParseResult parseResult = timesealCoder.decode(splitBytesToDecode);
+						if (parseResult != null) {
+							System.out.println(parseResult.getTimestamp());
+							parseResult.setMessage(parseResult.getMessage() + "\n");
+							System.out.println(parseResult.getMessage());
+							
+							buffer.put(parseResult.getMessage().getBytes(charset));
+						}
+					}
+					//buffer.position(0);
+					buffer.flip();
+				}
+				
 				CharsetDecoder decoder = charset.newDecoder();
 				CharBuffer charBuffer = decoder.decode(buffer);
-				return charBuffer.toString();
+				String message = charBuffer.toString();
+				return message;
+				//System.out.println(message);
+				//return "";
 			} else {
 				return "";
 			}
@@ -502,6 +555,11 @@ public class SocketConnectionService implements Service {
 						+ channel.socket().getLocalAddress(), t);
 			return null;
 		}
+	}
+	
+	private boolean looksLikeTimesealInit(byte[] bytes) {
+		return Arrays.equals(Arrays.copyOfRange(bytes, 0, 8), new byte[] { -101, -128, 113, -128, -98, -128, -128, -98 }) ||
+				 Arrays.equals(Arrays.copyOfRange(bytes, 0, 8), new byte[] { -124, -128, 113, -128, -97, -111, -128, -98 });
 	}
 
 	protected void sendWithoutPrompt(String message,
@@ -528,7 +586,7 @@ public class SocketConnectionService implements Service {
 		}
 	}
 
-	private void onNewChannel(SocketChannel channel) {
+	private synchronized void onNewChannel(SocketChannel channel) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info("onNewChannel();");
 		}
@@ -558,7 +616,7 @@ public class SocketConnectionService implements Service {
 		}
 	}
 
-	private void onNewInput(SocketChannel channel) {
+	private synchronized void onNewInput(SocketChannel channel) {
 		if (!channel.isOpen()) return;
 		
 		try {
@@ -575,7 +633,9 @@ public class SocketConnectionService implements Service {
 				} else {
 					synchronized (session.getInputBuffer()) {
 						String message = readMessage(channel);
-						if (message == null && channel.isOpen()) {
+						if (message != null && message.equals(MSG_TIMESEAL_OK)) {
+							// Don't need to do anything. This was just the timeseal init string.
+						} else if (message == null && channel.isOpen()) {
 							session.disconnect();
 						} else if (message == null) {
 							session.disconnect();
