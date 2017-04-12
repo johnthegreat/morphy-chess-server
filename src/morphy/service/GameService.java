@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -94,6 +94,9 @@ public class GameService implements Service {
 		// recycle this game number
 		stack.push(g.getGameNumber());
 		
+		// remove this game from the list
+		games.remove(g);
+		
 		sendGin(g,false);
 	}
 	
@@ -105,6 +108,9 @@ public class GameService implements Service {
 		if (messageToSendBlack == null) {
 			messageToSendBlack = new StringBuilder();
 		}
+		
+		SeekService.getInstance().removeSeeksByUsername(white.getUser().getUserName());
+		SeekService.getInstance().removeSeeksByUsername(black.getUser().getUserName());
 		
 		Game g = new Game();
 		g.setWhite(white);

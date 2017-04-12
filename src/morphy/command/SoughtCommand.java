@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2016 http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2016, 2017 http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public class SoughtCommand extends AbstractCommand {
 		
 		for (Seek seek : seeks) {
 			final String seekUsername = seek.getUserSession().getUser().getUserName();
-			final String seekRatingLimit = "0-9999"; // TODO
+			final String seekRatingLimit = String.format("%d-%d",seek.getRatingRange().getFromRating(), seek.getRatingRange().getToRating());
 			final String seekFlags = (seek.isUseManual() ? "m" : "") + (seek.isUseFormula() ? "f" : "");
 			
 			//  29 2636  Knightsmasher(C)    1   0 rated   lightning              0-9999 f

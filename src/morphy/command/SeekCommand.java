@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2016 http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2016, 2017 http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,14 +19,20 @@ package morphy.command;
 
 import morphy.game.Seek;
 import morphy.game.Variant;
+import morphy.game.params.GameParams;
 import morphy.service.GameService;
 import morphy.service.SeekService;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
 import morphy.user.UserVars;
 import morphy.utils.MorphyStringTokenizer;
+import sun.misc.Regexp;
 
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by John on 09/23/2016.
@@ -37,6 +43,9 @@ public class SeekCommand extends AbstractCommand {
 	}
 	
 	public void process(String arguments, UserSession userSession) {
+		// Your seek matches one already posted by guesttest.
+		// Your seek matches one posted by guesttest.
+		
 		final SeekService seekService = SeekService.getInstance();
 		final String myUsername = userSession.getUser().getUserName();
 		
@@ -70,7 +79,80 @@ public class SeekCommand extends AbstractCommand {
 		String timeStr = tokenizer.nextToken();
 		String incStr = tokenizer.nextToken();
 		String ratedStr = tokenizer.nextToken();
-		String colorPrefStr = tokenizer.nextToken();
+		
+		Variant variant = null;
+		Seek.SeekRatingRange ratingRange = new Seek.SeekRatingRange(0,9999);
+		
+		List<String> otherParams = new ArrayList<String>();
+		while(tokenizer.hasMoreTokens()) {
+			otherParams.add(tokenizer.nextToken());
+		}
+		
+		for(int i=0;i<otherParams.size();i++) {
+			String param = otherParams.get(i).toLowerCase();
+			
+			//
+			// Handle Color Requested
+			//
+			
+			if (param.equals("w") || param.equals("white")) {
+				seek.getSeekParams().setColorRequested(GameParams.ColorRequested.White);
+				continue;
+			} else if (param.equals("b") || param.equals("black")) {
+				seek.getSeekParams().setColorRequested(GameParams.ColorRequested.Black);
+				continue;
+			}
+			
+			//
+			// Handle Seek Flags (manual / formula)
+			//
+			
+			// TODO: handle param 'mf' or 'fm' case
+			
+			if (param.equals("m") || param.equals("manual")) {
+				seek.setUseManual(true);
+				continue;
+			}
+			
+			if (param.equals("f") || param.equals("formula")) {
+				seek.setUseFormula(true);
+				continue;
+			}
+			
+			//
+			// Handle Variant
+			//
+			
+			if (param.equals("zh") || param.indexOf("cra") == 0) {
+				variant = Variant.crazyhouse;
+				continue;
+			} else if (param.indexOf("bug") == 0) {
+				variant = Variant.bughouse;
+				continue;
+			}
+			
+			//
+			// Handle Rating Range
+			//
+			
+			Pattern pattern = Pattern.compile("(\\d+)-(\\d+)");
+			Matcher matcher = pattern.matcher(param);
+			if (matcher.matches()) {
+				int fromRating = Integer.parseInt(matcher.group(1));
+				int toRating = Integer.parseInt(matcher.group(2));
+				
+				if (fromRating > toRating) {
+					userSession.send("Invalid rating range specified.");
+					return;
+				} else {
+					ratingRange.setFromRating(fromRating);
+					ratingRange.setToRating(toRating);
+				}
+			}
+		}
+		
+		seek.getSeekParams().setVariant(variant);
+		seek.setRatingRange(ratingRange);
 		
 		UserVars myUserVars = userSession.getUser().getUserVars();
 		
@@ -121,14 +203,30 @@ public class SeekCommand extends AbstractCommand {
 			seek.getSeekParams().setRated(isRated);
 		}
 		
-		seek.getSeekParams().setVariant(Variant.blitz);
+		if (variant == null) {
+			// must be regular chess.
+			variant = Variant.getVariantBasedOnTimeAndIncrement(seek.getSeekParams().getTime(), seek.getSeekParams().getIncrement());
+		}
+		seek.getSeekParams().setVariant(variant);
 		
-		Seek registeredSeek = seekService.registerSeek(seek);
-		int seekIndex = registeredSeek.getSeekIndex();
-		
-		int numPlayersWhoSawSeek = 0; // TODO: number of players who saw seek
+		int numPlayersWhoSawSeek = seekService.registerSeek(seek);
+		int seekIndex = seek.getSeekIndex();
 		messageToSendBuilder.append(String.format("Your seek has been posted with index %d.\n(%d player(s) saw the seek.)", seekIndex, numPlayersWhoSawSeek));
 		
 		userSession.send(messageToSendBuilder.toString());
+		
+		// check to see if this seek matches any other existing seeks
+		Seek[] matchingSeeks = seekService.findMatchingSeeks(seek);
+		if (matchingSeeks != null && matchingSeeks.length > 0) {
+			// TODO: get user's rating for variant and match against seek rating range
+			// TODO: determine colors
+			UserSession white = matchingSeeks[0].getUserSession();
+			UserSession black = userSession;
+			
+			StringBuilder messageToSendWhite = new StringBuilder(String.format("Your seek matches one posted by %s.\n\n",black.getUser().getUserName()));
+			StringBuilder messageToSendBlack = new StringBuilder(String.format("Your seek matches one already posted by %s.\n\n", white.getUser().getUserName()));
+			
+			GameService.getInstance().createGame(white, black, matchingSeeks[0].getSeekParams(), messageToSendWhite, messageToSendBlack);
+		}
 	}
 }

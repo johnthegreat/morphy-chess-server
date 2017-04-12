@@ -134,7 +134,7 @@ public class Style12 implements StyleInterface {
 		final String canBlackCastleQueenside = ChesspressoUtils.canBlackCastleQueenside(position) ? "1" : "0";
 		
 		String style12string = String
-				.format("<12> %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s",
+				.format("<12> %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s%s",
 						drawPosition(position),
 						whoseMove,
 						doublePawnPushFile,

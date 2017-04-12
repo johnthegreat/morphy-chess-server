@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2016 http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2016-2017 http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,13 +55,12 @@ public class SeekService implements Service {
 		return seekIndicesStack.pop();
 	}
 	
-	public Seek registerSeek(Seek seek) {
+	public int registerSeek(Seek seek) {
 		int seekIndex = this.getNextAvailableSeekIndex();
 		seek.setSeekIndex(seekIndex);
 		
 		this.seekMap.put(seekIndex, seek);
-		this.notifyAllSeekers(seek);
-		return seek;
+		return this.notifyAllSeekers(seek);
 	}
 	
 	public Seek[] getSeeksByUsername(String username) {
@@ -101,7 +100,43 @@ public class SeekService implements Service {
 		}
 	}
 	
-	private void notifyAllSeekers(Seek seek) {
+	public Seek[] findMatchingSeeks(Seek seek) {
+		if (seek.isUseManual()) {
+			return null;
+		}
+		
+		final Seek[] allSeeks = this.getAllSeeks();
+		List<Seek> matchingSeeks = new ArrayList<Seek>();
+		for(int i=0;i<allSeeks.length;i++) {
+			Seek curSeek = allSeeks[i];
+			if (curSeek.isUseManual()) {
+				continue;
+			}
+			
+			if (curSeek.getSeekIndex() == seek.getSeekIndex()) {
+				continue;
+			}
+			
+			if (curSeek.getUserSession().getUser().getUserName().equals(seek.getUserSession().getUser().getUserName())) {
+				continue;
+			}
+			
+			if (this.areSeeksIdentical(curSeek, seek)) {
+				matchingSeeks.add(curSeek);
+			}
+		}
+		return matchingSeeks.toArray(new Seek[matchingSeeks.size()]);
+	}
+	
+	public boolean areSeeksIdentical(Seek a, Seek b) {
+		return a.getSeekParams().getTime() == b.getSeekParams().getTime()
+				&& a.getSeekParams().getIncrement() == b.getSeekParams().getIncrement()
+				&& a.getSeekParams().getVariant() == b.getSeekParams().getVariant();
+	}
+	
+	private int notifyAllSeekers(Seek seek) {
+		int numSentTo = 0;
+		
 		UserService s = UserService.getInstance();
 		UserSession[] arr = s.fetchAllUsersWithVariable("seek","1");
 		String line = generateSeekLine(seek);
@@ -117,8 +152,13 @@ public class SeekService implements Service {
 				// it looks like FICS does not send seek=1 message to people who are currently playing or examining.
 				continue;
 			}
+			
+			// TODO: add formula, rating checks
+			
 			userSession.send(line);
+			numSentTo++;
 		}
+		return numSentTo;
 	}
 	
 	private String generateSeekLine(Seek seek) {

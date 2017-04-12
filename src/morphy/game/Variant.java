@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@ package morphy.game;
 public enum Variant {
 	blitz,lightning,bughouse,frbughouse,crazyhouse,losers,suicide,frcrazyhouse,atomic,standard;
 	
-	/** For standard chess only */
+	/** For regular chess only */
 	public static Variant getVariantBasedOnTimeAndIncrement(int time,int inc) {
 		int etime = (time + inc*2/3);
 		if (etime < 3) return lightning;
-		if (etime > 3 && etime < 15) return blitz;
-		if (etime > 15) return standard;
+		if (etime >= 3 && etime < 15) return blitz;
+		if (etime >= 15) return standard;
 		
 		return null;
 	}
