@@ -214,19 +214,16 @@ public class SeekCommand extends AbstractCommand {
 		messageToSendBuilder.append(String.format("Your seek has been posted with index %d.\n(%d player(s) saw the seek.)", seekIndex, numPlayersWhoSawSeek));
 		
 		userSession.send(messageToSendBuilder.toString());
+		messageToSendBuilder = null;
 		
 		// check to see if this seek matches any other existing seeks
 		Seek[] matchingSeeks = seekService.findMatchingSeeks(seek);
 		if (matchingSeeks != null && matchingSeeks.length > 0) {
-			// TODO: get user's rating for variant and match against seek rating range
-			// TODO: determine colors
-			UserSession white = matchingSeeks[0].getUserSession();
-			UserSession black = userSession;
+			Seek firstMatchingSeek = matchingSeeks[0];
 			
-			StringBuilder messageToSendWhite = new StringBuilder(String.format("Your seek matches one posted by %s.\n\n",black.getUser().getUserName()));
-			StringBuilder messageToSendBlack = new StringBuilder(String.format("Your seek matches one already posted by %s.\n\n", white.getUser().getUserName()));
-			
-			GameService.getInstance().createGame(white, black, matchingSeeks[0].getSeekParams(), messageToSendWhite, messageToSendBlack);
+			messageToSendBuilder = new StringBuilder(String.format("Your seek matches one posted by %s.\n\n", firstMatchingSeek.getUserSession().getUser().getUserName()));
+			StringBuilder messageToSendOtherBuilder = new StringBuilder(String.format("Your seek matches one already posted by %s.\n\n", seek.getUserSession().getUser().getUserName()));
+			seekService.tryAcceptSeek(userSession, firstMatchingSeek, messageToSendBuilder, messageToSendOtherBuilder);
 		}
 	}
 }

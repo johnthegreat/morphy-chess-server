@@ -27,6 +27,7 @@ import morphy.game.Game;
 import morphy.game.GameInterface;
 import morphy.game.params.GameParams;
 import morphy.game.Variant;
+import morphy.user.PersonalList;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
 
@@ -298,5 +299,39 @@ public class GameService implements Service {
 		}
 	}
 	
+	public static enum UsersCannotPlayReason {
+		SELF, THEM_CENSOR_YOU, YOU_CENSOR_THEM, THEM_NOPLAY_YOU, YOU_NOPLAY_THEM, NONE;
+	}
 	
+	// TODO: not sure if this belongs in the GameService class.
+	public UsersCannotPlayReason verifyUserCanPlay(UserSession userSession, UserSession otherUserSession) {
+		if (userSession == otherUserSession) {
+			return UsersCannotPlayReason.SELF;
+		}
+		
+		final String myUsername = userSession.getUser().getUserName();
+		final String theirUsername = otherUserSession.getUser().getUserName();
+		
+		//
+		// FICS does the noplay check before the censor check.
+		//
+		
+		if (userSession.getUser().isOnList(PersonalList.noplay,theirUsername)) {
+			return UsersCannotPlayReason.YOU_NOPLAY_THEM;
+		}
+		
+		if (userSession.getUser().isOnList(PersonalList.censor,theirUsername)) {
+			return UsersCannotPlayReason.YOU_CENSOR_THEM;
+		}
+		
+		if (otherUserSession.getUser().isOnList(PersonalList.noplay, myUsername)) {
+			return UsersCannotPlayReason.THEM_NOPLAY_YOU;
+		}
+		
+		if (otherUserSession.getUser().isOnList(PersonalList.censor, myUsername)) {
+			return UsersCannotPlayReason.THEM_CENSOR_YOU;
+		}
+		
+		return UsersCannotPlayReason.NONE;
+	}
 }

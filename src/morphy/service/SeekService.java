@@ -18,8 +18,10 @@
 package morphy.service;
 
 import morphy.game.Seek;
+import morphy.user.PersonalList;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
+import morphy.user.UserVars;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -101,23 +103,17 @@ public class SeekService implements Service {
 	}
 	
 	public Seek[] findMatchingSeeks(Seek seek) {
-		if (seek.isUseManual()) {
-			return null;
-		}
-		
 		final Seek[] allSeeks = this.getAllSeeks();
 		List<Seek> matchingSeeks = new ArrayList<Seek>();
 		for(int i=0;i<allSeeks.length;i++) {
 			Seek curSeek = allSeeks[i];
-			if (curSeek.isUseManual()) {
-				continue;
-			}
 			
 			if (curSeek.getSeekIndex() == seek.getSeekIndex()) {
 				continue;
 			}
 			
-			if (curSeek.getUserSession().getUser().getUserName().equals(seek.getUserSession().getUser().getUserName())) {
+			GameService.UsersCannotPlayReason reason = GameService.getInstance().verifyUserCanPlay(seek.getUserSession(), curSeek.getUserSession());
+			if (reason != GameService.UsersCannotPlayReason.NONE) {
 				continue;
 			}
 			
@@ -188,6 +184,96 @@ public class SeekService implements Service {
 				seek.getSeekIndex());
 		
 		return seekLine;
+	}
+	
+	public void tryAcceptSeek(UserSession userSession, Seek seek) {
+		this.tryAcceptSeek(userSession, seek, null, null);
+	}
+	
+	/**
+	 *
+	 * @param userSession
+	 * @param seek
+	 * @param messageToSendBuilder
+	 * @param messageToSendOtherPlayerBuilder
+	 * @return
+	 */
+	public void tryAcceptSeek(UserSession userSession, Seek seek, StringBuilder messageToSendBuilder, StringBuilder messageToSendOtherPlayerBuilder) {
+		if (GameService.getInstance().verifyUserCanPlay(userSession, seek.getUserSession()) != GameService.UsersCannotPlayReason.NONE) {
+			return;
+		}
+		
+		SeekService seekService = SeekService.getInstance();
+		final UserSession otherPlayerUserSession = seek.getUserSession();
+		
+		if (messageToSendBuilder == null) {
+			messageToSendBuilder = new StringBuilder();
+		}
+		
+		if (messageToSendOtherPlayerBuilder == null) {
+			messageToSendOtherPlayerBuilder = new StringBuilder();
+		}
+		
+		if (seek.isUseManual()) {
+			//
+			// Send message to the initiating user
+			//
+			
+			messageToSendBuilder.append("Issuing match request since the seek was set to manual.\n");
+			// TODO: watch out for 0 0 case... use buildVariantString() ?
+			messageToSendBuilder.append(String.format("Issuing: %s (%s) %s (%s) %s %s",
+					userSession.getUser().getUserName(), "----", otherPlayerUserSession.getUser().getUserName(), "----",
+					seek.getSeekParams().isRated() ? "rated" : "unrated", buildVariantString(seek)));
+			userSession.send(messageToSendBuilder.toString());
+			
+			//
+			// Send message to the user that posted the seek
+			//
+			
+			UserVars otherPlayerUserVars = otherPlayerUserSession.getUser().getUserVars();
+			messageToSendOtherPlayerBuilder.append(String.format("%s accepts your seek.\n\n", userSession.getUser().getUserName()));
+			// TODO: watch out for 0 0 case... use buildVariantString() ?
+			messageToSendOtherPlayerBuilder.append(String.format("Challenge: %s (%s) %s (%s) %s %s %d %d.",
+					userSession.getUser().getUserName(),"----",
+					otherPlayerUserSession.getUser().getUserName(), "----",
+					seek.getSeekParams().isRated()?"rated":"unrated", seek.getSeekParams().getVariant(), seek.getSeekParams().getTime(), seek.getSeekParams().getIncrement()));
+			messageToSendOtherPlayerBuilder.append(String.format("\nYou can \"accept\" or \"decline\", or propose different parameters.%s",
+					(otherPlayerUserVars.getVariables().get("bell").equals("1")?((char)7):"")));
+			otherPlayerUserSession.send(messageToSendOtherPlayerBuilder.toString());
+		} else {
+			//
+			// remove all seeks for both players, they are starting a game.
+			//
+			seekService.removeSeeksByUsername(userSession.getUser().getUserName());
+			seekService.removeSeeksByUsername(otherPlayerUserSession.getUser().getUserName());
+			
+			// prepended message is only sent to the other player
+			messageToSendOtherPlayerBuilder.append(String.format("%s accepts your seek.\n\n", userSession.getUser().getUserName()));
+			
+			//
+			// start the game.
+			//
+			GameService gameService = GameService.getInstance();
+			gameService.createGame(userSession, otherPlayerUserSession, seek.getSeekParams(), messageToSendBuilder, messageToSendOtherPlayerBuilder);
+		}
+	}
+	
+	/*
+	 * used in tryAcceptSeek()
+	 */
+	protected String buildVariantString(Seek seek) {
+		// ... unrated untimed
+		// ... unrated standard 999 999
+		
+		int timeMinutes = seek.getSeekParams().getTime();
+		int incSeconds = seek.getSeekParams().getIncrement();
+		
+		if (timeMinutes == 0 && incSeconds == 0) {
+			return "untimed";
+		} else {
+			return String.format("%s %d %d",
+					seek.getSeekParams().getVariant().name(), timeMinutes, incSeconds);
+		}
 	}
 	
 	public Seek[] getAllSeeks() {
