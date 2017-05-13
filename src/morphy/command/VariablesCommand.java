@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,21 +42,22 @@ public class VariablesCommand extends AbstractCommand {
 		
 		String userName = args[0];
 		
-		if (userName.equals(""))
+		if (userName.equals("")) {
 			userName = userSession.getUser().getUserName();
+		}
 		
-		if (userName.length() < 3) {
-			userSession.send("You must provide at least 3 characters of the name.");
+		if (userName.length() < 2) {
+			userSession.send("You must provide at least 2 characters of the name.");
 			return;
 		}
 		
 		String[] matches = UserService.getInstance().completeHandle(userName);
 		if (matches.length > 1) {
-			userSession.send("Ambiguous handle \"" + userName + "\". Matches: " + MorphyStringUtils.toDelimitedString(matches," "));
+			userSession.send(String.format("Ambiguous handle \"%s\". Matches: %s",userName,MorphyStringUtils.toDelimitedString(matches," ")));
 			return;
-		}
-		if (matches.length == 1)
+		} else if (matches.length == 1) {
 			userName = matches[0];
+		}
 		
 		UserSession personQueried = UserService.getInstance().getUserSession(userName);
 		if (!UserService.getInstance().isValidUsername(userName)) {

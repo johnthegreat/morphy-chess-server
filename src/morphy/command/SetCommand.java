@@ -448,9 +448,10 @@ public class SetCommand extends AbstractCommand {
 	
 	private variables[] findAllMatches(variables[] vars,String varname) {
 		java.util.List<variables> arr = new java.util.ArrayList<variables>();
+		varname = varname.toLowerCase();
 		
 		for(variables v : vars) {
-			String tmp = v.name();
+			String tmp = v.name().toLowerCase();
 			if (tmp.indexOf("my") == 0) tmp = tmp.substring(2);
 			if (tmp.startsWith(varname)) {
 				arr.add(v);
