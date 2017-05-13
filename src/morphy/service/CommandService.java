@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ import morphy.command.admin.ShutdownCommand;
 import morphy.game.ExaminedGame;
 import morphy.game.Game;
 import morphy.game.Move;
+import morphy.game.ProcessGameMoveHelper;
 import morphy.move.parser.ChesspressoMoveParser;
 import morphy.move.parser.NotationParser;
 import morphy.move.parser.MoveParseResult;
@@ -230,92 +231,34 @@ public class CommandService implements Service {
 		
 	}
 	
-	public void processGameMove(SocketChannelUserSession userSession,String command) {
-		morphy.game.GameInterface g = GameService.getInstance().map.get(userSession);
-		if (g != null) {
-			if (g instanceof Game) {
-				Game gg = (Game)g;
-				/*if (!gg.isClockTicking()) {
-					userSession.send("The clock is paused, use \"unpause\" to resume.\n\n"+gg.processMoveUpdate(userSession));
-					return;
-				}*/
-				boolean isWhiteMove = gg.getWhite().equals(userSession);
-				long last = gg.getTimeLastMoveMade();
-				if (last == 0L) {
-					last = System.currentTimeMillis();
-				}
-				
-				// now, parse the SAN into a move.
-				
-				int myColor = isWhiteMove ? Chess.WHITE : Chess.BLACK;
-				if (gg.getBoard().getGame().getPosition().getToPlay() == myColor) {
-					try {
-						NotationParser notationParser = new ChesspressoMoveParser();
-						MoveParseResult moveParseResult = notationParser.parseMove(gg.getBoard().getGame().getPosition(), command, isWhiteMove);
-						gg.getBoard().getGame().getPosition().doMove(moveParseResult.getInternalMove());
-					} catch(IllegalMoveException e) {
-						userSession.send(String.format("Illegal move (%s).",command));
-						System.err.print(e.getMessage());
-						return;
-					}
-				} else {
-					userSession.send("It is not your move.");
-					return;
-				}
-				
-				long newt = gg.touchLastMoveMadeTime();
-				if (isWhiteMove) {
-					gg.setWhiteClock((gg.getWhiteClock()-(int)(newt-last)) + (gg.getIncrement()*1000));
-				} else {
-					gg.setBlackClock((gg.getBlackClock()-(int)(newt-last)) + (gg.getIncrement()*1000));
-				}
-				gg.processMoveUpdate(true);
-				
-				// Check for game end
-				if (gg.getBoard().getGame().getPosition().isMate()) {
-					// game over
-					String result = gg.getBoard().getGame().getPosition().getLastMove().isWhiteMove() ? "1-0" : "0-1";
-					g.setResult(result);
-					String reason = String.format("%s checkmated",(gg.getBoard().getGame().getPosition().getLastMove().isWhiteMove() ?
-							gg.getBlack().getUser().getUserName() : gg.getWhite().getUser().getUserName()));
-					g.setReason(reason);
-					
-					GameService.getInstance().endGame(gg);
-					return;
-				} else if (gg.getBoard().getGame().getPosition().isStaleMate()) {
-					// game over
-					g.setResult("1/2-1/2");
-					g.setReason("Game drawn by stalemate");
-					GameService.getInstance().endGame(gg);
-					return;
-				}
-			}
-			
-			if (g instanceof ExaminedGame) {
-				ExaminedGame gg = (ExaminedGame)g;
-				
-				gg.processMoveUpdate(true);
-			}
-		} else {
-			userSession.send("You are not playing or examining a game.");
-		}
-		return;
-	}
+	
 	
 	public void processCommandAndCheckAliases(String command,SocketChannelUserSession userSession) {
 		command = command.trim();
 		
-		if (command.equals("0-0")) command = "O-O";
-		if (command.equals("0-0-0")) command = "O-O-O";
+		//
+		// CHECK FOR A GAME MOVE
+		//
+		
+		if (command.equals("0-0")) {
+			command = "O-O";
+		} else if (command.equals("0-0-0")) {
+			command = "O-O-O";
+		}
+		
 		boolean isMove = Move.isValidSAN(command);
 		// think there is a bug in the isValidSAN, where "+" is considered valid.
 		if (isMove && command.startsWith("+")) {
 			isMove = false;
 		}
 		if (isMove) {
-			processGameMove(userSession, command);
+			ProcessGameMoveHelper.processGameMove(userSession, command);
 			return;
 		}
+		
+		//
+		// PROCESS EVERYTHING ELSE
+		//
 		
 		String keyword = null;
 		String content = null;
@@ -334,7 +277,7 @@ public class CommandService implements Service {
 		if (keyword.startsWith("+") || keyword.startsWith("-") || keyword.startsWith("=")) {
 			String what = regexHelper(""+keyword.charAt(0));
 			String whatlist = keyword.substring(1);
-			if (whatlist.equals("")) {
+			if (whatlist.equals("") && what != null) {
 				if (what.equals("addlist")) { userSession.send(new AddListCommand().getContext().getUsage()); return; }
 				if (what.equals("removelist")) { userSession.send(new RemoveListCommand().getContext().getUsage()); return; }
 				if (what.equals("showlist")) {

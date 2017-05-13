@@ -238,7 +238,18 @@ public class Game implements GameInterface {
 		this.isClockTicking = isClockTicking;
 	}
 
+	@Override
 	public boolean isClockTicking() {
 		return isClockTicking;
+	}
+	
+	@Override
+	public String getWhiteName() {
+		return this.getWhite().getUser().getUserName();
+	}
+	
+	@Override
+	public String getBlackName() {
+		return this.getBlack().getUser().getUserName();
 	}
 }

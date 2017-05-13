@@ -68,6 +68,8 @@ public class Style12 implements StyleInterface {
 			isExaminedGame = true;
 			ExaminedGame eg = (ExaminedGame)g;
 			
+			isPaused = !g.isClockTicking();
+			
 			whiteName = eg.getWhiteName();
 			blackName = eg.getBlackName();
 			
@@ -114,7 +116,9 @@ public class Style12 implements StyleInterface {
 		int lag = 0; // requires timeseal...
 		int moveNumber = numMoves/2;
 		if (moveNumber == 0) moveNumber = 1;
-		isPaused = ((isBughouse||numMoves>=2)&&!isExaminedGame);
+		if (g instanceof Game) {
+			isPaused = ((isBughouse || numMoves >= 2) && !isExaminedGame);
+		}
 		
 		
 		String whoseMove = position.getToPlay() == Chess.WHITE ? "W" : "B";

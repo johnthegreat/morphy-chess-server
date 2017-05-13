@@ -22,6 +22,8 @@ public interface GameInterface extends Comparable<GameInterface> {
 	public int getGameNumber();
 	public int getTime();
 	public int getIncrement();
+	public String getWhiteName();
+	public String getBlackName();
 	public int getWhiteBoardStrength();
 	public int getBlackBoardStrength();
 	public int getWhiteClock();
@@ -31,7 +33,10 @@ public interface GameInterface extends Comparable<GameInterface> {
 	public Variant getVariant();
 	public String getReason();
 	public String getResult();
+	public boolean isClockTicking();
 	
+	public void setWhiteClock(int whiteClock);
+	public void setBlackClock(int blackClock);
 	public void setReason(String reason);
 	public void setResult(String result);
 	public void setGameNumber(int num);

@@ -39,6 +39,7 @@ public class ExaminedGame implements GameInterface {
 	private String result;
 	private boolean isWhitesMove = true;
 	private long timeGameStarted;
+	private boolean isClockTicking = false;
 	
 	private int whiteClock;
 	private int blackClock;
@@ -221,6 +222,7 @@ public class ExaminedGame implements GameInterface {
 		this.whiteName = whiteName;
 	}
 
+	@Override
 	public String getWhiteName() {
 		return whiteName;
 	}
@@ -229,6 +231,7 @@ public class ExaminedGame implements GameInterface {
 		this.blackName = blackName;
 	}
 
+	@Override
 	public String getBlackName() {
 		return blackName;
 	}
@@ -262,5 +265,14 @@ public class ExaminedGame implements GameInterface {
 	public int compareTo(GameInterface o) {
 		if (o instanceof Game) return -1; 
 		else return new Integer(gameNumber).compareTo(o.getGameNumber());		
+	}
+	
+	@Override
+	public boolean isClockTicking() {
+		return isClockTicking;
+	}
+	
+	public void setClockTicking(boolean clockTicking) {
+		this.isClockTicking = clockTicking;
 	}
 }

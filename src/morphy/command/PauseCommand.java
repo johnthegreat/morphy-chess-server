@@ -67,38 +67,42 @@ public class PauseCommand extends AbstractCommand {
 					return;
 				}
 			} else if (g instanceof ExaminedGame) {
-				
+				ExaminedGame eg = (ExaminedGame)g;
+				eg.setClockTicking(false);
+				g.processMoveUpdate(true);
 			}
 		}
 		
-		if (arguments.matches("[0-9]+")) {
-			Request r = rs.getRequestTo(userSession,Integer.parseInt(arguments));
-			if (!r.getTo().equals(userSession)) {
-				userSession.send("There is no offer " + arguments + " to accept.\nType \"pending\" to see the list of offers.");
+		if (g != null && g instanceof Game) {
+			if (arguments.matches("[0-9]+")) {
+				Request r = rs.getRequestTo(userSession, Integer.parseInt(arguments));
+				if (!r.getTo().equals(userSession)) {
+					userSession.send(String.format("There is no offer %s to accept.\nType \"pending\" to see the list of offers.",arguments));
+					return;
+				}
+				if (r != null) {
+					// we found it, we no longer need the list
+					list = new java.util.ArrayList<Request>(1);
+					list.add(r);
+				}
+			}
+			
+			int num = list == null ? 0 : list.size();
+			
+			if (num >= 2) {
+				userSession.send("There is more than one pending offer.\nType \"pending\" to see the list of offers.\nType \"decline n\" to decline an offer.");
 				return;
 			}
-			if (r != null) {
-				// we found it, we no longer need the list
-				list = new java.util.ArrayList<Request>(1);
-				list.add(r);
+			
+			if (num == 0) {
+				userSession.send("There are no offers to decline.");
+				return;
 			}
-		}
-		
-		int num = list == null ? 0 : list.size();
-		
-		if (num >= 2) {
-			userSession.send("There is more than one pending offer.\nType \"pending\" to see the list of offers.\nType \"decline n\" to decline an offer.");
-			return;
-		}
-		
-		if (num == 0) {
-			userSession.send("There are no offers to decline.");
-			return;
-		}
-		
-		if (num == 1) {
-			// 
-			list.get(0).acceptAction();
+			
+			if (num == 1) {
+				//
+				list.get(0).acceptAction();
+			}
 		}
 	}
 }
