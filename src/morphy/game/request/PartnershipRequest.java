@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,10 +26,15 @@ public class PartnershipRequest implements Request {
 	private UserSession from;
 	private UserSession to;
 	private int requestNumber;
+	private String extraInfo = "#";
 	
 	public PartnershipRequest(UserSession from,UserSession to) {
 		this.from = from;
 		this.to = to;
+	}
+	
+	public String getRequestIdentifier() {
+		return "partner";
 	}
 	
 	public void acceptAction() {
@@ -37,24 +42,22 @@ public class PartnershipRequest implements Request {
 		ps.addPartnership(from, to);
 		
 		String toUsername = to.getUser().getUserName();
-		from.send(toUsername + " agrees to be your partner.");
-		from.send("You will now be following " + toUsername + "'s partner's games.");
+		from.send(String.format("%s agrees to be your partner.",toUsername));
+		from.send(String.format("You will now be following %s's partner's games.",toUsername));
+		
 		String fromUsername = from.getUser().getUserName();
-		to.send("You agree to be " + fromUsername + "'s partner.");
-		to.send("You will now be following " + fromUsername + "'s partner's games.");
+		to.send(String.format("You agree to be %s's partner.",fromUsername));
+		to.send(String.format("You will now be following %s's partner's games.",fromUsername));
 		
 		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
+		rs.removeRequest(this);
 	}
 
 	public void declineAction() {
+		from.send(String.format("%s declines the partnership request.",to.getUser().getUserName()));
+		to.send(String.format("You decline the partnership request from %s.",from.getUser().getUserName()));
 		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
-		
-		from.send(to.getUser().getUserName() + " declines the partnership request.");
-		to.send("You decline the partnership request from " + from.getUser().getUserName() + ".");
+		rs.removeRequest(this);
 	}
 
 	public void setRequestNumber(int i) {
@@ -72,5 +75,12 @@ public class PartnershipRequest implements Request {
 	public UserSession getTo() {
 		return to;
 	}
-
+	
+	public String getExtraInfo() {
+		return extraInfo;
+	}
+	
+	public void setExtraInfo(String extraInfo) {
+		this.extraInfo = extraInfo;
+	}
 }

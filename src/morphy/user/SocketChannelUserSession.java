@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (c) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (c) 2008-2011, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -165,15 +165,14 @@ public class SocketChannelUserSession implements UserSession,
 					for(Request r : list) {
 						String toUsername = r.getTo().getUser().getUserName();
 						if (r.getClass() == MatchRequest.class) {
-							r.getFrom().send(toUsername + " whom you were challenging, has departed.\nChallenge to " + toUsername + " withdrawn.");
+							r.getFrom().send(String.format("%s whom you were challenging, has departed.\nChallenge to %s withdrawn.",toUsername,toUsername));
+						} else if (r.getClass() == PartnershipRequest.class) {
+							r.getFrom().send(String.format("%s, whom you were offering a partnership with, has departed.\n" +
+									"Partnership offer to %s withdrawn.",toUsername,toUsername));
 						}
-						if (r.getClass() == PartnershipRequest.class) {
-							r.getFrom().send(toUsername + ", whom you were offering a partnership with, has departed.\n" +
-									"Partnership offer to " + toUsername + " withdrawn.");
-						}
+						rs.removeRequest(r);
 					}
 				}
-				rs.removeAllRequestsTo(this);
 				
 				GameService gs = GameService.getInstance();
 				morphy.game.GameInterface g = gs.map.get(this);
@@ -316,7 +315,7 @@ public class SocketChannelUserSession implements UserSession,
 				
 				ByteBuffer buffer = BufferUtils
 						.createBuffer(SocketConnectionService.getInstance()
-								.formatMessage(this, message + "\n\r" + prompt + " "));
+								.formatMessage(this, message + "\n" + prompt + " "));
 				System.out.println((message + "\n\r" + prompt + " ").replace("\n","\\n").replace("\r","\\r"));
 				try {
 					channel.write(buffer);

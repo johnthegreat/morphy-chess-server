@@ -252,8 +252,12 @@ public class MatchCommand extends AbstractCommand {
 		
 		UserVars uv = sess.getUser().getUserVars();
 		StringBuilder toStr = new StringBuilder(200);
-		toStr.append("Challenge: " + userSession.getUser().getUserName() + " (----) " + (p.getColorRequested()!=MatchParams.ColorRequested.Neither?"[" + p.getColorRequested().name() + "]":"") + " " + sess.getUser().getUserName() + " (----) " + (p.isRated()?"rated":"unrated") + " " + p.getVariant() + " " + p.getTime() + " " + p.getIncrement() + ".");
-		toStr.append("\nYou can \"accept\" or \"decline\", or propose different parameters." + (uv.getVariables().get("bell").equals("1")?((char)7):""));
+		// TODO: ratings
+		String infoLine = String.format("%s (%s)%s %s (%s) %s %s %s %s", userSession.getUser().getUserName(),"----",
+				(p.getColorRequested() != MatchParams.ColorRequested.Neither ? " [" + p.getColorRequested().name() + "]" : ""), sess.getUser().getUserName(),
+				"----", p.isRated() ? "rated" : "unrated", p.getVariant(), p.getTime(), p.getIncrement());
+		toStr.append(String.format("Challenge: %s.",infoLine));
+		toStr.append(String.format("\nYou can \"accept\" or \"decline\", or propose different parameters.%s", uv.getVariables().get("bell").equals("1") ? ((char)7) : ""));
 		sess.send(toStr.toString());
 		
 		uv = userSession.getUser().getUserVars();
@@ -262,16 +266,21 @@ public class MatchCommand extends AbstractCommand {
 			str.append("You are now open to receive match requests.\n");
 			uv.getVariables().put("open","1");
 		}
-		if (!update) str.append("Issuing: " + userSession.getUser().getUserName() + " (----) " + sess.getUser().getUserName() + " (----) " + (p.getColorRequested()!=MatchParams.ColorRequested.Neither?"[" + p.getColorRequested().name() + "]":"") + " " + (p.isRated()?"rated":"unrated") + " " + p.getVariant() + " " + p.getTime() + " " + p.getIncrement() + ".");
-		if (update) {
-			str.append("Updating offer already made to \"" + sess.getUser().getUserName() + "\".\n\n");
-			// TODO watchout for bug where color is Neither
-			str.append("Updating match request to: " + ((p.getColorRequested()==MatchParams.ColorRequested.White)?userSession.getUser().getUserName():sess.getUser().getUserName()) + " (----) " + ((p.getColorRequested()==MatchParams.ColorRequested.Black)?userSession.getUser().getUserName():sess.getUser().getUserName()) + "(----) " + (p.isRated()?"rated":"unrated") + " " + p.getVariant() + " " + p.getTime() + " " + p.getIncrement() + ".");
+		if (!update) {
+			str.append(String.format("Issuing: %s (%s) %s (%s)%s %s %s %s %s.",infoLine));
+		} else {
+			str.append(String.format("Updating offer already made to \"%s\".\n\n",sess.getUser().getUserName()));
+			str.append(String.format("Updating match request to: %s",infoLine));
 		}
 		userSession.send(str.toString());
 		
 		MatchRequest req = new MatchRequest(userSession,sess,p);
-		rs.removeRequestTo(sess, oldInstance);
+		
+		req.setExtraInfo(infoLine);
+		
+		if (oldInstance != null) {
+			rs.removeRequest(oldInstance);
+		}
 		rs.addRequest(userSession, sess, req);
 	}
 }

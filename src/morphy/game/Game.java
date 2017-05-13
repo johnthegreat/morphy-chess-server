@@ -83,7 +83,9 @@ public class Game implements GameInterface {
 	public String generateGameInfoLine(boolean provshow) {
 		// TODO add provshow=1
 		Game g = this;
-		String g1 = "\n<g1> " + g.getGameNumber() + " p=0 t=" + g.getVariant().name() + " r=" + (g.isRated()?"1":"0") + " u=" + String.format("%s,%s",g.getWhite().getUser().isRegistered()?"1":"0",g.getBlack().getUser().isRegistered()?"1":"0") + " it="+(g.getTime()*60)+","+ g.getIncrement() + " i="+(g.getTime()*60)+","+g.getIncrement()+" pt=0 rt=0" + (provshow?"P":"") + ",0" + (provshow?"P":"E") + " ts=0,0 m=2 n=0\n";
+		String g1 = "\n<g1> " + g.getGameNumber() + " p=0 t=" + g.getVariant().name() + " r=" +
+				(g.isRated()?"1":"0") + " u=" + String.format("%s,%s",g.getWhite().getUser().isRegistered()?"1":"0",g.getBlack().getUser().isRegistered()?"1":"0") +
+				" it="+(g.getTime()*60)+","+ g.getIncrement() + " i="+(g.getTime()*60)+","+g.getIncrement()+" pt=0 rt=0" + (provshow?"P":"") + ",0" + (provshow?"P":"") + " ts=0,0 m=2 n=0\n";
 		return g1;
 	}
 	

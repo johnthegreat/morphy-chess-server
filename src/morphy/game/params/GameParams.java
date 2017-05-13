@@ -20,7 +20,18 @@ package morphy.game.params;
 import morphy.game.Variant;
 
 public interface GameParams {
-	enum ColorRequested { White,Black,Neither; };
+	enum ColorRequested {
+		White,Black,Neither;
+		
+		public ColorRequested getOppositeColor() {
+			if (this == White) {
+				return Black;
+			} else if (this == Black) {
+				return White;
+			}
+			return Neither;
+		}
+	}
 	
 	int getTime();
 	void setTime(int time);

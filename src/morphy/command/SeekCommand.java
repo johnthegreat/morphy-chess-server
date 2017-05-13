@@ -20,15 +20,12 @@ package morphy.command;
 import morphy.game.Seek;
 import morphy.game.Variant;
 import morphy.game.params.GameParams;
-import morphy.service.GameService;
 import morphy.service.SeekService;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
 import morphy.user.UserVars;
 import morphy.utils.MorphyStringTokenizer;
-import sun.misc.Regexp;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -74,6 +71,8 @@ public class SeekCommand extends AbstractCommand {
 		
 		// Usage: seek [time inc] [rated|unrated] [white|black] [crazyhouse] [suicide]
         //    [wild #] [auto|manual] [formula] [rating-range]
+		
+		seek.getSeekParams().setColorRequested(GameParams.ColorRequested.Neither);
 		
 		MorphyStringTokenizer tokenizer = new MorphyStringTokenizer(arguments, " ");
 		String timeStr = tokenizer.nextToken();

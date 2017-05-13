@@ -18,14 +18,14 @@
 package morphy.service;
 
 import morphy.game.Seek;
-import morphy.user.PersonalList;
+import morphy.game.params.GameParams;
+import morphy.game.request.MatchRequest;
 import morphy.user.SocketChannelUserSession;
 import morphy.user.UserSession;
 import morphy.user.UserVars;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.nio.channels.SocketChannel;
 import java.util.*;
 
 /**
@@ -215,15 +215,19 @@ public class SeekService implements Service {
 		}
 		
 		if (seek.isUseManual()) {
+			// TODO: be able to reuse code in MatchCommand... then we probably would not really need any of this...
+			
+			String infoLine = String.format("%s (%s)%s %s (%s) %s %s", userSession.getUser().getUserName(),"----",
+					(seek.getSeekParams().getColorRequested() != GameParams.ColorRequested.Neither ? " [" + seek.getSeekParams().getColorRequested().getOppositeColor().name() + "]" : ""),
+					otherPlayerUserSession.getUser().getUserName(),  "----", seek.getSeekParams().isRated() ? "rated" : "unrated",
+					buildVariantString(seek));
+			
 			//
 			// Send message to the initiating user
 			//
 			
 			messageToSendBuilder.append("Issuing match request since the seek was set to manual.\n");
-			// TODO: watch out for 0 0 case... use buildVariantString() ?
-			messageToSendBuilder.append(String.format("Issuing: %s (%s) %s (%s) %s %s",
-					userSession.getUser().getUserName(), "----", otherPlayerUserSession.getUser().getUserName(), "----",
-					seek.getSeekParams().isRated() ? "rated" : "unrated", buildVariantString(seek)));
+			messageToSendBuilder.append(String.format("Issuing: %s",infoLine));
 			userSession.send(messageToSendBuilder.toString());
 			
 			//
@@ -232,14 +236,15 @@ public class SeekService implements Service {
 			
 			UserVars otherPlayerUserVars = otherPlayerUserSession.getUser().getUserVars();
 			messageToSendOtherPlayerBuilder.append(String.format("%s accepts your seek.\n\n", userSession.getUser().getUserName()));
-			// TODO: watch out for 0 0 case... use buildVariantString() ?
-			messageToSendOtherPlayerBuilder.append(String.format("Challenge: %s (%s) %s (%s) %s %s %d %d.",
-					userSession.getUser().getUserName(),"----",
-					otherPlayerUserSession.getUser().getUserName(), "----",
-					seek.getSeekParams().isRated()?"rated":"unrated", seek.getSeekParams().getVariant(), seek.getSeekParams().getTime(), seek.getSeekParams().getIncrement()));
+			messageToSendOtherPlayerBuilder.append(String.format("Challenge: %s.",infoLine));
 			messageToSendOtherPlayerBuilder.append(String.format("\nYou can \"accept\" or \"decline\", or propose different parameters.%s",
 					(otherPlayerUserVars.getVariables().get("bell").equals("1")?((char)7):"")));
 			otherPlayerUserSession.send(messageToSendOtherPlayerBuilder.toString());
+			
+			MatchRequest matchRequest = new MatchRequest(userSession, otherPlayerUserSession, seek.getSeekParams());
+			matchRequest.setExtraInfo(infoLine);
+			RequestService.getInstance().addRequest(userSession, otherPlayerUserSession, matchRequest);
+			
 		} else {
 			//
 			// remove all seeks for both players, they are starting a game.

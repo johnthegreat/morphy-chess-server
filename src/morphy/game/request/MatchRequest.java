@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 package morphy.game.request;
 
+import morphy.game.params.GameParams;
 import morphy.game.params.MatchParams;
 import morphy.service.GameService;
 import morphy.service.RequestService;
@@ -26,12 +27,17 @@ public class MatchRequest implements Request {
 	
 	private UserSession from;
 	private UserSession to;
-	private MatchParams params;
+	private GameParams params;
 	private int requestNumber;
-	public MatchRequest(UserSession from,UserSession to,MatchParams params) {
+	private String extraInfo;
+	public MatchRequest(UserSession from,UserSession to,GameParams params) {
 		this.from = from;
 		this.to = to;
 		this.params = params;
+	}
+	
+	public String getRequestIdentifier() {
+		return "match";
 	}
 	
 	public boolean areMatchParamsSame(MatchParams mp) {
@@ -50,33 +56,31 @@ public class MatchRequest implements Request {
 		//
 		
 		StringBuilder messageToSendWhite = new StringBuilder();
-		messageToSendWhite.append(String.format("%s accepts the match offer.\n\r\n\r", from.getUser().getUserName()));
+		messageToSendWhite.append(String.format("%s accepts the match offer.\n\n", from.getUser().getUserName()));
 		
 		// in this case, to-user is black...
 		StringBuilder messageToSendBlack = new StringBuilder();
-		messageToSendBlack.append(String.format("You accept the match offer from %s.\n\r\n\r", to.getUser().getUserName()));
+		messageToSendBlack.append(String.format("You accept the match offer from %s.\n\n", to.getUser().getUserName()));
 		
 		gs.createGame(from, to, params, messageToSendWhite, messageToSendBlack);
 		
 		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
+		rs.removeRequest(this);
 	}
 
 	public void declineAction() {
-		to.send("You decline the match offer from " + from.getUser().getUserName() + ".");
-		from.send(to.getUser().getUserName() + " declines the match offer.");
+		to.send(String.format("You decline the match offer from %s.",from.getUser().getUserName()));
+		from.send(String.format("%s declines the match offer.",to.getUser().getUserName()));
 		
 		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
+		rs.removeRequest(this);
 	}
 
 	public void setParams(MatchParams params) {
 		this.params = params;
 	}
 
-	public MatchParams getParams() {
+	public GameParams getParams() {
 		return params;
 	}
 
@@ -103,5 +107,12 @@ public class MatchRequest implements Request {
 	public void setTo(UserSession to) {
 		this.to = to;
 	}
-
+	
+	public String getExtraInfo() {
+		return extraInfo;
+	}
+	
+	public void setExtraInfo(String extraInfo) {
+		this.extraInfo = extraInfo;
+	}
 }

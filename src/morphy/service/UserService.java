@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011, 2016  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2016-2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -118,8 +118,9 @@ public class UserService implements Service {
 		List<String> matches = new ArrayList<String>();
 		for (int i=0;i<allkeys.length;i++) {
 			String s = allkeys[i];
-			if (s.toLowerCase().startsWith(partial.toLowerCase()))
+			if (s.toLowerCase().startsWith(partial.toLowerCase())) {
 				matches.add(values[i].getUser().getUserName());
+			}
 		}
 
 		return matches.toArray(new String[matches.size()]);

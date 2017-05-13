@@ -26,4 +26,7 @@ public interface Request {
 	public int getRequestNumber();
 	public UserSession getFrom();
 	public UserSession getTo();
+	public String getRequestIdentifier();
+	public void setExtraInfo(String extraInfo);
+	public String getExtraInfo();
 }

@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -390,26 +390,28 @@ public class SetCommand extends AbstractCommand {
 					
 					RequestService rq = RequestService.getInstance();
 					if (var == VariablesCommand.variables.open && message.equals("0")) {
+						final String myUsername = userSession.getUser().getUserName();
+						
 						List<Request> list = rq.findAllToRequestsByType(userSession,MatchRequest.class);
 						if (list != null) {
 							for(Request r : list) {
-								r.getFrom().send(userSession.getUser().getUserName() + ", whom you were challenging, has become unavailable for matches.\n" +
-										"Challenge to " + userSession.getUser().getUserName() + " withdrawn.");
-								rq.removeRequestFrom(r.getFrom(),r);
-								userSession.send("Challenge from " + r.getFrom().getUser().getUserName() + " removed.");
+								r.getFrom().send(String.format("%s, whom you were challenging, has become unavailable for matches.\nChallenge to %s withdrawn.",myUsername,myUsername));
+								rq.removeRequest(r);
+								userSession.send(String.format("Challenge from %s removed.",r.getFrom().getUser().getUserName()));
 							}
-							rq.removeRequestsTo(userSession,MatchRequest.class);
 						}
 					}
 					
 					if (var == variables.bugopen && message.equals("0")) {
+						final String myUsername = userSession.getUser().getUserName();
+						
 						List<Request> list = rq.findAllToRequestsByType(userSession,PartnershipRequest.class);
 						for(Request r : list) {
-							r.getFrom().send(userSession.getUser().getUserName() + ", whom you were offering a partnership with, has become unavailable for bughouse.\n" +
-									"Partnership offer to " + userSession.getUser().getUserName() + " withdrawn.");
-							userSession.send("Partnership offer from " + r.getFrom().getUser().getUserName() + " removed.");
+							r.getFrom().send(String.format("%s, whom you were offering a partnership with, has become unavailable for bughouse.\n" +
+									"Partnership offer to %s withdrawn.",myUsername,myUsername));
+							rq.removeRequest(r);
+							userSession.send(String.format("Partnership offer from %s removed.",r.getFrom().getUser().getUserName()));
 						}
-						rq.removeRequestsTo(userSession,PartnershipRequest.class);
 					}
 					
 					userSession.send(returnmessage);

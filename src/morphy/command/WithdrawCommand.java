@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 package morphy.command;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import morphy.game.request.AbortRequest;
@@ -39,42 +40,44 @@ public class WithdrawCommand extends AbstractCommand {
 		if (arguments.matches("[0-9]+")) {
 			Request r = rs.getRequestFrom(userSession,Integer.parseInt(arguments));
 			if (!r.getFrom().equals(userSession)) {
-				userSession.send("There is no offer " + arguments + " to withdraw.\nType \"pending\" to see the list of offers.");
+				userSession.send(String.format("There is no offer %s to withdraw.\nType \"pending\" to see the list of offers.",arguments));
 				return;
 			}
 			if (r != null) {
 				// we found it, we no longer need the list
-				list = new java.util.ArrayList<Request>(1);
+				list = new ArrayList<Request>(1);
 				list.add(r);
 			}
 		}
 		
 		int num = list == null ? 0 : list.size();
 		
-		if (num >= 2) {
-			userSession.send("There is more than one pending offer.\nType \"pending\" to see the list of offers.\nType \"withdraw number\" to withdraw an offer.");
-			return;
-		}
-		
 		if (num == 0) {
 			userSession.send("There are no offers to withdraw.");
 			return;
-		}
-		
-		if (num == 1) {
+		} else if (num >= 2) {
+			userSession.send("There is more than one pending offer.\nType \"pending\" to see the list of offers.\nType \"withdraw number\" to withdraw an offer.");
+			return;
+		} else if (num == 1) {
 			Request r = list.get(0);
 			
 			String requestOrOffer = "offer";
 			String offerType = "";
-			if (r instanceof AbortRequest) { offerType = "abort"; requestOrOffer = "request"; }
-			if (r instanceof MatchRequest) { offerType = "match"; requestOrOffer = "offer"; }
-			if (r instanceof PartnershipRequest) { offerType = "partnership"; requestOrOffer = "request"; }
+			if (r instanceof AbortRequest) {
+				offerType = "abort";
+				requestOrOffer = "request";
+			} else if (r instanceof MatchRequest) {
+				offerType = "match";
+				requestOrOffer = "offer";
+			} else if (r instanceof PartnershipRequest) {
+				offerType = "partnership";
+				requestOrOffer = "request";
+			}
 			
-			r.getFrom().send("You withdraw the " + offerType + " " + requestOrOffer + " to " + r.getTo().getUser().getUserName() + ".");
-			r.getTo().send(r.getFrom().getUser().getUserName() + " withdraws the " + offerType + " " + requestOrOffer + ".");
+			r.getFrom().send(String.format("You withdraw the %s %s to %s.",offerType,requestOrOffer,r.getTo().getUser().getUserName()));
+			r.getTo().send(String.format("%s withdraws the %s %s.",r.getFrom().getUser().getUserName(),offerType,requestOrOffer));
 			
-			rs.removeRequestFrom(r.getFrom(),r);
-			rs.removeRequestTo(r.getTo(),r);
+			rs.removeRequest(r);
 		}
 	}
 }

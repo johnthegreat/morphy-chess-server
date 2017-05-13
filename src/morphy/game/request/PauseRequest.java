@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2010  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2010, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,10 +28,15 @@ public class PauseRequest implements Request {
 	private UserSession from;
 	private UserSession to;
 	private int requestNumber;
+	private String extraInfo = "#";
 	
 	public PauseRequest(UserSession from,UserSession to) {
 		this.from = from;
 		this.to = to;
+	}
+	
+	public String getRequestIdentifier() {
+		return "pause";
 	}
 	
 	public void acceptAction() {
@@ -49,19 +54,17 @@ public class PauseRequest implements Request {
 		to.send("You accept the pause request from " + fromUsername + ".\n\n"+g.processMoveUpdate(to) + "\nGame " + g.getGameNumber() + ": Game clock paused.");
 		
 		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
+		rs.removeRequest(this);
 	}
 
 	public void declineAction() {
-		RequestService rs = RequestService.getInstance();
-		rs.removeRequestFrom(from,this);
-		rs.removeRequestTo(to,this);
-		
 		String toUsername = to.getUser().getUserName();
-		from.send(toUsername + " declines the pause request.");
+		from.send(String.format("%s declines the pause request.",toUsername));
 		String fromUsername = from.getUser().getUserName();
-		to.send("You decline the pause request from " + fromUsername + ".");
+		to.send(String.format("You decline the pause request from %s.",fromUsername));
+		
+		RequestService rs = RequestService.getInstance();
+		rs.removeRequest(this);
 	}
 
 	public void setRequestNumber(int i) {
@@ -79,5 +82,12 @@ public class PauseRequest implements Request {
 	public UserSession getTo() {
 		return to;
 	}
-
+	
+	public String getExtraInfo() {
+		return extraInfo;
+	}
+	
+	public void setExtraInfo(String extraInfo) {
+		this.extraInfo = extraInfo;
+	}
 }

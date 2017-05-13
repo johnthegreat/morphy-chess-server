@@ -1,6 +1,6 @@
 /*
  *   Morphy Open Source Chess Server
- *   Copyright (C) 2008-2011  http://code.google.com/p/morphy-chess-server/
+ *   Copyright (C) 2008-2011, 2017  http://code.google.com/p/morphy-chess-server/
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class RequestService implements Service {
+	private enum RequestType { ADD,REMOVE; }
+	private enum RequestUser { FROM, TO; }
+	
 	protected static Log LOG = LogFactory.getLog(RequestService.class);
 	private static RequestService singletonInstance = new RequestService();
 	
@@ -51,7 +54,7 @@ public class RequestService implements Service {
 	public int getNextAvailableNumber() {
 		if (stack.empty()) {
 			stackSize++;
-			stack.push(new Integer(stackSize));
+			stack.push(stackSize);
 		}
 		return stack.pop();
 	}
@@ -67,6 +70,55 @@ public class RequestService implements Service {
 			toMap.put(to,new ArrayList<Request>(10));
 		}
 		toMap.get(to).add(req);
+		
+		this.notifyUsersPendInfo(req, RequestType.ADD);
+	}
+	
+	// convenience method for sending pendinfo lines to both to and from users
+	private void notifyUsersPendInfo(Request req, RequestType requestType) {
+		this.notifyUserPendInfo(req,requestType,req.getFrom(),RequestUser.FROM);
+		this.notifyUserPendInfo(req,requestType,req.getTo(),RequestUser.TO);
+	}
+	
+	// method to send pendinfo to one specific individual
+	private void notifyUserPendInfo(Request req, RequestType requestType, UserSession user, RequestUser userType) {
+		// Wondering if I could have this code somewhere else. This service so far is pretty clean maybe it could stay that way.
+		
+		if (requestType == RequestType.ADD) {
+		
+			/* Also we will need the pendinfo line included with a previous message in some cases, e.g. partnership.
+			 * But in most cases (match, abort, pause), it is sent by itself.
+			 * Note: # is actually what is sent for p= line for partnership, abort, pause requests.
+			 */
+			
+			// <pt> 3 w=GuestQMSS t=match p=GuestPVGC (----) GuestQMSS (----) unrated blitz 5 0
+			if (userType == RequestUser.FROM && isPendinfoSet(user)) {
+				final String toUsername = req.getTo().getUser().getUserName();
+				String pendInfoLine = String.format("<pt> %d w=%s t=%s p=%s", req.getRequestNumber(), toUsername, req.getRequestIdentifier(), req.getExtraInfo());
+				user.send(pendInfoLine);
+			}
+			
+			// <pf> 3 w=GuestPVGC t=match p=GuestPVGC (----) GuestQMSS (----) unrated blitz 5 0
+			if (userType == RequestUser.TO && isPendinfoSet(user)) {
+				final String fromUsername = req.getFrom().getUser().getUserName();
+				String pendInfoLine = String.format("<pf> %d w=%s t=%s p=%s", req.getRequestNumber(), fromUsername, req.getRequestIdentifier(), req.getExtraInfo());
+				user.send(pendInfoLine);
+			}
+			
+		} else if (requestType == RequestType.REMOVE) {
+			// when offer is withdrawn, <pr> is sent as separate prompt.
+			// when offer is declined, <pr> is sent as same prompt as "You decline the..."
+			
+			// same message sent to both from and to users
+			if (isPendinfoSet(user)) {
+				user.send(String.format("<pr> %d", req.getRequestNumber()));
+			}
+		}
+	}
+	
+	private boolean isPendinfoSet(UserSession userSession) {
+		String pendInfo = userSession.getUser().getUserVars().getIVariables().get("pendinfo");
+		return pendInfo != null && pendInfo.equals("1");
 	}
 	
 	public Request getRequestFrom(UserSession userSession,int id) {
@@ -129,56 +181,63 @@ public class RequestService implements Service {
 		return copy;
 	}
 	
+	public void removeRequest(Request request) {
+		this.removeRequestFrom(request.getFrom(),request);
+		this.removeRequestTo(request.getTo(),request);
+		this.recycleRequestNumber(request.getRequestNumber());
+		this.notifyUsersPendInfo(request, RequestType.REMOVE);
+	}
+	
 	/** This method removes all requests of type "type" from outgoing offers. */
-	public void removeRequestsFrom(UserSession userSession,Class<? extends Request> type) {
+	protected void removeRequestsFrom(UserSession userSession,Class<? extends Request> type) {
 		if (!fromMap.containsKey(userSession)) return;
 		
 		List<Request> rList = fromMap.get(userSession);
 		for(int i=0;i<rList.size();i++) {
 			Request r = rList.get(i); 
 			if (r.getClass() == type) {
-				rList.remove(i--); 
-				recycleRequestNumber(r.getRequestNumber());
+				rList.remove(i--);
 			}
 		}
 	}
 	
-	public void removeRequestsTo(UserSession userSession,Class<? extends Request> type) {
+	protected void removeRequestsTo(UserSession userSession,Class<? extends Request> type) {
 		if (!toMap.containsKey(userSession)) return;
 		
 		List<Request> rList = toMap.get(userSession);
 		for(int i=0;i<rList.size();i++) {
 			Request r = rList.get(i); 
 			if (r.getClass() == type) {
-				rList.remove(i--); 
-				recycleRequestNumber(r.getRequestNumber());
+				rList.remove(i--);
 			}
 		}
 	}
 	
-	public void removeRequestFrom(UserSession userSession,Request instance) {
+	protected void removeRequestFrom(UserSession userSession,Request instance) {
 		if (!fromMap.containsKey(userSession)) return;
 		
 		List<Request> rList = fromMap.get(userSession);
 		rList.remove(instance);
 	}
 	
-	public void removeRequestTo(UserSession userSession,Request instance) {
+	protected void removeRequestTo(UserSession userSession,Request instance) {
 		if (!toMap.containsKey(userSession)) return;
 		
 		List<Request> rList = toMap.get(userSession);
 		rList.remove(instance);
 	}
 	
-	public void removeAllRequestsTo(UserSession userSession) {
+	protected void removeAllRequestsTo(UserSession userSession) {
 		if (!toMap.containsKey(userSession)) return;
 		
 		List<Request> rList = toMap.get(userSession);
-		rList.clear();
+		for(Request request : rList) {
+			this.removeRequestTo(userSession, request);
+		}
 	}
 	
 	public void recycleRequestNumber(int num) {
-		stack.push(new Integer(num));
+		stack.push(num);
 	}
 	
 	public void dispose() {
